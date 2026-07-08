@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "starfall",
+  "key": {
+    "D": {
+      "item": "minecraft:dragon_egg"
+    },
+    "E": {
+      "item": "minecraft:enchanted_golden_apple"
+    },
+    "S": {
+      "item": "minecraft:netherite_sword"
+    },
+    "W": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "pattern": [
+    " EE",
+    "WDE",
+    "SW "
+  ],
+  "result": {
+    "count": 1,
+    "id": "ultramace:starfall"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "mace",
+  "key": {
+    "B": {
+      "item": "minecraft:blaze_rod"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "pattern": [
+    "BNB",
+    "NSN",
+    "BNB"
+  ],
+  "result": {
+    "count": 1,
+    "id": "ultramace:fire_orb"
+  }
+}

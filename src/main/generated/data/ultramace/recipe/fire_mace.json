@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "group": "mace",
+  "key": {
+    "B": {
+      "item": "minecraft:breeze_rod"
+    },
+    "F": {
+      "item": "ultramace:fire_orb"
+    },
+    "M": {
+      "item": "minecraft:mace"
+    },
+    "R": {
+      "item": "minecraft:blaze_rod"
+    }
+  },
+  "pattern": [
+    "RFR",
+    "RMR",
+    "RBR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "ultramace:fire_mace"
+  }
+}
