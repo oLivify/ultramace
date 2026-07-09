@@ -23,6 +23,9 @@ import net.minecraft.util.Identifier;
 
 import net.minecraft.util.TypedActionResult;
 import net.oliviy.ultramace.effects.ModEffects;
+import net.oliviy.ultramace.event.AttackEvents;
+import net.oliviy.ultramace.event.ParalysisEvents;
+import net.oliviy.ultramace.event.UseItemEvents;
 import net.oliviy.ultramace.hud.ModHud;
 import net.oliviy.ultramace.item.ItemAttributeManager;
 import net.oliviy.ultramace.item.ModItems;
@@ -50,6 +53,9 @@ public class Ultramace implements ModInitializer {
 		ModEffects.registerEffects();
 		ModParticles.registerParticles();
 		ModNetworking.register();
+		ParalysisEvents.register();
+		AttackEvents.register();
+		UseItemEvents.register();
 		register();
 		checkTotem();
 		clientEvents();
