@@ -155,7 +155,6 @@ public class StarfallItem extends SwordItem {
         float bonus = COMBO.get(id);
 
         target.damage(world.getDamageSources().playerAttack(player), 6f + bonus);
-        System.out.println(6f + bonus);
 
         if (world.random.nextFloat() < 0.07f) {
             spawnHomingMeteor(world, target, attacker);
@@ -213,7 +212,7 @@ public class StarfallItem extends SwordItem {
             return TypedActionResult.pass(stack);
         }
 
-        CooldownManager.startCooldown(user, METEOR_COOLDOWN_ID);
+        CooldownManager.startCooldown(user, METEOR_COOLDOWN_ID, METEOR_COOLDOWN);
 
 
         LivingEntity target = findEnemy(serverWorld, user);
@@ -279,7 +278,7 @@ public class StarfallItem extends SwordItem {
             return;
         }
 
-        CooldownManager.startCooldown(player, STARQUAKE_COOLDOWN_ID);
+        CooldownManager.startCooldown(player, STARQUAKE_COOLDOWN_ID, STARQUAKE_COOLDOWN);
 
         Vec3d center = player.getPos();
 
@@ -358,7 +357,7 @@ public class StarfallItem extends SwordItem {
             return;
         }
 
-        CooldownManager.startCooldown(player, ULTIMATE_COOLDOWN_ID);
+        CooldownManager.startCooldown(player, ULTIMATE_COOLDOWN_ID, ULTIMATE_COOLDOWN);
 
         player.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 400, 1));
         player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 400, 1));

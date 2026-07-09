@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.oliviy.ultramace.client.ClientCooldownManager;
 import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.data.AbilityHudData;
 import net.oliviy.ultramace.item.custom.bloodharvester.BloodharvesterItem;
@@ -144,17 +145,29 @@ public class ModHud implements HudRenderCallback {
 
         for (AbilityHudData ability : abilities) {
 
-            boolean ready = CooldownManager.isReady(
-                    player,
-                    ability.cooldownId,
-                    ability.cooldownTicks
+            boolean ready = !ClientCooldownManager.isOnCooldown(
+                    ability.cooldownId
             );
 
-            String time = CooldownManager.getFormattedTime(
-                    player,
-                    ability.cooldownId,
-                    ability.cooldownTicks
+            long remaining = ClientCooldownManager.getRemainingTicks(
+                    ability.cooldownId
             );
+
+            String time;
+            if (remaining <= 0) {
+                time = "Ready";
+            } else {
+                long seconds = (remaining + 19) / 20;
+
+                long minutes = seconds / 60;
+                seconds %= 60;
+
+                if (minutes > 0) {
+                    time = minutes + ":" + String.format("%02d", seconds);
+                } else {
+                    time = seconds + "s";
+                }
+            }
 
             context.drawText(
                     client.textRenderer,

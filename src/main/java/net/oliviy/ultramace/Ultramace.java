@@ -31,6 +31,7 @@ import net.oliviy.ultramace.item.custom.dawnrender.DawnrenderItem;
 import net.oliviy.ultramace.item.custom.dawnrender.FreezeManager;
 import net.oliviy.ultramace.item.custom.starfall.StarfallItem;
 import net.oliviy.ultramace.item.custom.stormcleaver.StormcleaverItem;
+import net.oliviy.ultramace.network.ModNetworking;
 import net.oliviy.ultramace.particles.ModParticles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ public class Ultramace implements ModInitializer {
 		ModItems.registerModItems();
 		ModEffects.registerEffects();
 		ModParticles.registerParticles();
+		ModNetworking.register();
 		register();
 		checkTotem();
 		clientEvents();

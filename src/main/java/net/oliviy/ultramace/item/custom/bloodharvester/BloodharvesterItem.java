@@ -1,5 +1,6 @@
 package net.oliviy.ultramace.item.custom.bloodharvester;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
@@ -145,7 +146,7 @@ public class BloodharvesterItem extends SwordItem {
                 return super.postHit(stack, target, attacker);
             }
 
-            CooldownManager.startCooldown(player, SWEEP_COOLDOWN_ID);
+            CooldownManager.startCooldown(player, SWEEP_COOLDOWN_ID, SWEEP_COOLDOWN);
 
             executionSweep(player,target);
         }
@@ -167,7 +168,7 @@ public class BloodharvesterItem extends SwordItem {
 
             return TypedActionResult.pass(user.getMainHandStack());
         }
-        CooldownManager.startCooldown(user, BLOOD_RITE_COOLDOWN_ID);
+        CooldownManager.startCooldown(user, BLOOD_RITE_COOLDOWN_ID, BLOOD_RITE_COOLDOWN);
 
         bloodRite(world,user);
 
@@ -226,7 +227,7 @@ public class BloodharvesterItem extends SwordItem {
             return;
         }
 
-        CooldownManager.startCooldown(player, DOMAIN_COOLDOWN_ID);
+        CooldownManager.startCooldown(player, DOMAIN_COOLDOWN_ID, DOMAIN_COOLDOWN);
 
         double radius = 10.0;
 

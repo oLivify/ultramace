@@ -111,7 +111,7 @@ public class VoidpiercerItem extends SwordItem {
                     return super.postHit(stack, target, attacker);
                 }
 
-                CooldownManager.startCooldown(user, RIFT_COOLDOWN_ID);
+                CooldownManager.startCooldown(user, RIFT_COOLDOWN_ID, RIFT_COOLDOWN);
             }
 
 
@@ -135,7 +135,7 @@ public class VoidpiercerItem extends SwordItem {
             return TypedActionResult.pass(stack);
         }
 
-        CooldownManager.startCooldown(user, BLINK_COOLDOWN_ID);
+        CooldownManager.startCooldown(user, BLINK_COOLDOWN_ID, BLINK_COOLDOWN);
 
 
         VoidPearlEntity pearl = new VoidPearlEntity(world, user);

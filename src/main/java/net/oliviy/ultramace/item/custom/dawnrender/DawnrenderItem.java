@@ -133,7 +133,7 @@ public class DawnrenderItem extends SwordItem {
                 return TypedActionResult.pass(stack);
             }
 
-            CooldownManager.startCooldown(user, DIVINE_CLEAVE_ID);
+            CooldownManager.startCooldown(user, DIVINE_CLEAVE_ID, DIVINE_CLEAVE_COOLDOWN);
 
             // direction player is looking
             Vec3d lookDir = user.getRotationVec(1.0f);
@@ -254,7 +254,7 @@ public class DawnrenderItem extends SwordItem {
 
                 }
 
-                CooldownManager.startCooldown(player, DAWN_TOTEM_ID);
+                CooldownManager.startCooldown(player, DAWN_TOTEM_ID, DAWN_TOTEM_COOLDOWN);
 
 
                 return false; // CANCEL death
@@ -282,7 +282,7 @@ public class DawnrenderItem extends SwordItem {
             return;
         }
 
-        CooldownManager.startCooldown(player, CELESTIAL_BINDING_ID);
+        CooldownManager.startCooldown(player, CELESTIAL_BINDING_ID, CELESTIAL_BINDING_COOLDOWN);
 
         PlayerEntity caster = player;
 

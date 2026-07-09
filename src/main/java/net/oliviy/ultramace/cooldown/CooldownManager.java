@@ -1,6 +1,9 @@
 package net.oliviy.ultramace.cooldown;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.oliviy.ultramace.network.payload.CooldownPayload;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,11 +20,26 @@ public class CooldownManager {
      * @param player The player.
      * @param abilityId A unique ID, e.g. "dawnrender_judgment".
      */
-    public static void startCooldown(PlayerEntity player, String abilityId) {
+    public static void startCooldown(PlayerEntity player, String abilityId, long cooldownTicks) {
+
+        long startTick = player.getWorld().getTime();
+        long endTick = startTick + cooldownTicks;
 
         COOLDOWNS
                 .computeIfAbsent(player.getUuid(), uuid -> new HashMap<>())
                 .put(abilityId, player.getWorld().getTime());
+
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+
+            ServerPlayNetworking.send(
+                    serverPlayer,
+                    new CooldownPayload(
+                            abilityId,
+                            endTick
+                    )
+            );
+
+        }
     }
 
     /**

@@ -150,7 +150,7 @@ public class StormcleaverItem extends SwordItem {
         if (world.isClient()) return;
         if (!(user instanceof PlayerEntity player)) return;
 
-        CooldownManager.startCooldown(player, THUNDER_COOLDOWN_ID);
+        CooldownManager.startCooldown(player, THUNDER_COOLDOWN_ID, THUNDER_COOLDOWN);
 
 
         int usedTicks = this.getMaxUseTime(stack, user) - remainingUseTicks;

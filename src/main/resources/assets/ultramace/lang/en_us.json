@@ -7,5 +7,6 @@
   "item.ultramace.starfall": "Starfall",
   "item.ultramace.bloodharvester": "Bloodharvester",
 
-  "effect.ultramace.bleeding": "Bleeding"
+  "effect.ultramace.bleeding": "Bleeding",
+  "effect.ultramace.paralysis": "Paralysis"
 }
