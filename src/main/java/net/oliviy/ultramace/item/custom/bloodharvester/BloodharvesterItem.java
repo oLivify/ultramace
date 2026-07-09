@@ -183,10 +183,12 @@ public class BloodharvesterItem extends SwordItem {
 
         double radius = 8.0;
 
+        PlayerEntity caster = player;
+
         List<LivingEntity> targets = world.getEntitiesByClass(
                 LivingEntity.class,
                 player.getBoundingBox().expand(radius),
-                e -> e != player && e.isAlive()
+                entity -> entity.isAlive() && entity != caster
         );
 
         for (LivingEntity target : targets) {
@@ -228,10 +230,12 @@ public class BloodharvesterItem extends SwordItem {
 
         double radius = 10.0;
 
+        PlayerEntity caster = player;
+
         List<LivingEntity> targets = world.getEntitiesByClass(
                 LivingEntity.class,
                 player.getBoundingBox().expand(radius),
-                e -> e != player && e.isAlive()
+                entity -> entity.isAlive() && entity != caster
         );
 
         for (LivingEntity target : targets) {
@@ -289,10 +293,12 @@ public class BloodharvesterItem extends SwordItem {
         // COST: player sacrifices health
         player.damage(player.getDamageSources().magic(), 8.0f);
 
+        PlayerEntity caster = player;
+
         List<LivingEntity> targets = world.getEntitiesByClass(
                 LivingEntity.class,
                 player.getBoundingBox().expand(radius),
-                e -> e != player && e.isAlive()
+                entity -> entity.isAlive() && entity != caster
         );
 
         int hitCount = 0;

@@ -146,10 +146,12 @@ public class DawnrenderItem extends SwordItem {
             // area of effect (30 block radius)
             Box box = new Box(center).expand(30);
 
+            PlayerEntity caster = user;
+
             for (LivingEntity e : world.getEntitiesByClass(
                     LivingEntity.class,
                     box,
-                    entity -> entity != user
+                    entity -> entity.isAlive() && entity != caster
             )) {
                 e.damage(world.getDamageSources().magic(), user.getHealth()*2);
             }
@@ -282,11 +284,13 @@ public class DawnrenderItem extends SwordItem {
 
         CooldownManager.startCooldown(player, CELESTIAL_BINDING_ID);
 
+        PlayerEntity caster = player;
+
 
         List<LivingEntity> targets = world.getEntitiesByClass(
                 LivingEntity.class,
                 player.getBoundingBox().expand(15),
-                entity -> entity != player
+                entity -> entity.isAlive() && entity != caster
         );
 
 

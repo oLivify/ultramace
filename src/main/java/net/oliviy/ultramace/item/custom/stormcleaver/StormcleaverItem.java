@@ -160,11 +160,13 @@ public class StormcleaverItem extends SwordItem {
 
         double radius = 50.0 * charge; // optional scaling radius
 
+        PlayerEntity caster = player;
+
 
         List<LivingEntity> targets = world.getEntitiesByClass(
                 LivingEntity.class,
                 player.getBoundingBox().expand(radius),
-                e -> e != player && e.isAlive()
+                entity -> entity.isAlive() && entity != caster
         );
 
         float baseDamage = 6.0f;

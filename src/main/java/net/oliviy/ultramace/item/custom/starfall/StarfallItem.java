@@ -1,25 +1,17 @@
 package net.oliviy.ultramace.item.custom.starfall;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.DragonFireballEntity;
-import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -57,8 +49,7 @@ public class StarfallItem extends SwordItem {
 
     private static final Set<UUID> SWORD_IN_OFFHAND = new HashSet<>();
 
-    private static final UUID ULTIMATE_HEALTH_UUID =
-            UUID.fromString("8b5cbf88-5fd8-4c8f-90f5-6c7b0f4d4d7d");
+
 
 
     // =========================
@@ -292,6 +283,9 @@ public class StarfallItem extends SwordItem {
 
         Vec3d center = player.getPos();
 
+        PlayerEntity caster = player;
+
+
         for (int wave = 1; wave <= 3; wave++) {
 
             int radius = wave * 4;
@@ -301,7 +295,7 @@ public class StarfallItem extends SwordItem {
                 for (LivingEntity e : world.getEntitiesByClass(
                         LivingEntity.class,
                         new Box(BlockPos.ofFloored(center)).expand(radius),
-                        entity -> entity.isAlive() && !(entity instanceof PlayerEntity)
+                        entity -> entity.isAlive() && entity != caster
                 )) {
 
                     e.damage(world.getDamageSources().outOfWorld(), 10f);
@@ -372,12 +366,14 @@ public class StarfallItem extends SwordItem {
 
         Vec3d pos = player.getPos();
 
+        PlayerEntity caster = player;
+
         for (int t = 0; t < 200; t += 10) {
             schedule(t, () -> {
                 for (LivingEntity e : world.getEntitiesByClass(
                         LivingEntity.class,
                         new Box(BlockPos.ofFloored(pos)).expand(10),
-                        entity -> entity.isAlive() && !(entity instanceof PlayerEntity)
+                        entity -> entity.isAlive() && entity != caster
                 )) {
 
                     e.damage(world.getDamageSources().magic(), 8f);
@@ -404,10 +400,12 @@ public class StarfallItem extends SwordItem {
     // ==================================================
 
     private LivingEntity findEnemy(ServerWorld world, PlayerEntity player) {
+
         return world.getEntitiesByClass(
-                        LivingEntity.class,
-                        new Box(BlockPos.ofFloored(player.getPos())).expand(20),
-                        e -> e != player && e.isAlive())
-                .stream().findFirst().orElse(null);
+                LivingEntity.class,
+                new Box(BlockPos.ofFloored(player.getPos())).expand(20),
+                entity -> entity.isAlive() && entity != player
+        ).stream().findFirst().orElse(null);
     }
+
 }
