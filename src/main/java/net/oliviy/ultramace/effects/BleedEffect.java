@@ -11,8 +11,8 @@ import net.oliviy.ultramace.particles.ModParticles;
 
 public class BleedEffect extends StatusEffect {
 
-    public BleedEffect() {
-        super(StatusEffectCategory.HARMFUL, 0x8B0000);
+    public BleedEffect(StatusEffectCategory category, int color) {
+        super(category, color);
 
         addAttributeModifier(
                 EntityAttributes.GENERIC_MOVEMENT_SPEED,

@@ -291,7 +291,7 @@ public class BloodharvesterItem extends SwordItem {
             // Apply bleed effect (simple version using vanilla effects)
             target.addStatusEffect(
                     new StatusEffectInstance(
-                            ModEffects.BLEED,
+                            ModEffects.BLEEDING,
                             100,
                             0
                     )
@@ -504,7 +504,7 @@ public class BloodharvesterItem extends SwordItem {
     private void applyBleed(LivingEntity target) {
         target.addStatusEffect(
                 new StatusEffectInstance(
-                        ModEffects.BLEED,
+                        ModEffects.BLEEDING,
                         100,
                         0
                 )

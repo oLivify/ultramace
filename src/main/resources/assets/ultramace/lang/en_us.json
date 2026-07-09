@@ -5,5 +5,7 @@
   "item.ultramace.stormcleaver": "Stormcleaver",
   "item.ultramace.voidpiercer": "Voidpiercer",
   "item.ultramace.starfall": "Starfall",
-  "item.ultramace.bloodharvester": "Bloodharvester"
+  "item.ultramace.bloodharvester": "Bloodharvester",
+
+  "effect.ultramace.bleeding": "Bleeding"
 }

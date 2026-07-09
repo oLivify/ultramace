@@ -1,7 +1,6 @@
 package net.oliviy.ultramace.effects;
 
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
+
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.registry.Registries;
@@ -12,12 +11,8 @@ import net.oliviy.ultramace.Ultramace;
 
 public class ModEffects {
 
-    public static final RegistryEntry<StatusEffect> BLEED =
-            Registry.registerReference(
-                    Registries.STATUS_EFFECT,
-                    Identifier.of(Ultramace.MOD_ID, "bleed"),
-                    new BleedEffect()
-            );
+    public static final RegistryEntry<StatusEffect> BLEEDING = registerStatusEffect("bleeding",
+            new BleedEffect(StatusEffectCategory.HARMFUL, 0x8B0000));
 
 
 
