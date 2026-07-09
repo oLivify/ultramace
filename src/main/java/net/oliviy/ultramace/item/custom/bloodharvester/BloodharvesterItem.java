@@ -86,7 +86,7 @@ public class BloodharvesterItem extends SwordItem {
     public void onCraftByPlayer(ItemStack stack, World world, PlayerEntity player) {
         super.onCraftByPlayer(stack, world, player);
         if (!world.isClient) {
-            ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
+            //ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
             ModItems.giveDragonEgg(player);
             ModItems.playCraftedSound(world, player);
         }
@@ -135,7 +135,7 @@ public class BloodharvesterItem extends SwordItem {
 
 
             player.sendMessage(
-                    Text.literal("Blood Stacks: " + stacks),
+                    Text.literal("§4Blood Stacks: " + stacks +"§r"),
                     true
             );
 

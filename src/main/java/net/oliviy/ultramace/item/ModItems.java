@@ -14,6 +14,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import net.oliviy.ultramace.Ultramace;
 import net.oliviy.ultramace.item.custom.FireMace;
@@ -110,6 +111,9 @@ public class ModItems {
             entries.add(FIRE_MACE);
             entries.add(DAWNRNDER);
             entries.add(STORMCLEAVER);
+            entries.add(VOIDPIERCER);
+            entries.add(STARFALL);
+            entries.add(BLOODHARVESTER);
         });
     }
 
@@ -138,5 +142,6 @@ public class ModItems {
 
         stack.addEnchantment(entry, level);
     }
+
 
 }

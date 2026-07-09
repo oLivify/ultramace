@@ -84,7 +84,7 @@ public class ModHud implements HudRenderCallback {
 
             new AbilityHudData(
                     "Blood Rite",
-                    0x8B0000, // deep blood red
+                    0xB22222, // deep blood red
                     10000,
                     id -> BloodharvesterItem.BLOOD_RITE_COOLDOWN_MAP.getOrDefault(id, 0L)
             ),
@@ -98,7 +98,7 @@ public class ModHud implements HudRenderCallback {
 
             new AbilityHudData(
                     "Reaper's Domain",
-                    0x550000, // dark void-red
+                    0xDA70D6, // dark void-red
                     20000,
                     id -> BloodharvesterItem.DOMAIN_COOLDOWN_MAP.getOrDefault(id, 0L)
             )

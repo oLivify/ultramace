@@ -74,7 +74,7 @@ public class Ultramace implements ModInitializer {
 			return true;
 		});
 
-		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
+		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> { // adds two blood stacks when the player kills a entity
 
 			if (!(damageSource.getAttacker() instanceof PlayerEntity player))
 				return;
@@ -82,7 +82,7 @@ public class Ultramace implements ModInitializer {
 			if (!player.getMainHandStack().isOf(ModItems.BLOODHARVESTER))
 				return;
 
-			BloodharvesterItem.addBloodStacks(player, 5);
+			BloodharvesterItem.addBloodStacks(player, 2);
 
 		});
 	}

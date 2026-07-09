@@ -1,6 +1,5 @@
 package net.oliviy.ultramace.item.custom.dawnrender;
 
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.LivingEntity;
@@ -15,8 +14,6 @@ import net.minecraft.item.SwordItem;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -27,6 +24,7 @@ import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -50,7 +48,7 @@ public class DawnrenderItem extends SwordItem {
         super.onCraftByPlayer(stack, world, player);
 
         if (!world.isClient) {
-            ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
+            //ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
             ModItems.giveDragonEgg(player);
             ModItems.playCraftedSound(world, player);
 
@@ -173,63 +171,96 @@ public class DawnrenderItem extends SwordItem {
 
         if (!(entity instanceof PlayerEntity player)) return true;
 
-        ItemStack stack = player.getMainHandStack();
 
-        if (!(stack.getItem() instanceof DawnrenderItem)) return true;
+        if (player.getMainHandStack().isOf(ModItems.DAWNRNDER)) {
 
 
-        UUID id = player.getUuid();
-        long now = System.currentTimeMillis();
+            float healthAfter = player.getHealth() - amount;
 
-        long lastUse = DAWN_TOTEM_COOLDOWN_MAP.getOrDefault(id, 0L);
+            // ONLY trigger on lethal damage
+            if (healthAfter <= 0.0f) {
 
-        if (now - lastUse < DAWN_TOTEM_COOLDOWN) {
+                UUID id = player.getUuid();
+                long now = System.currentTimeMillis();
+
+                long lastUse = DAWN_TOTEM_COOLDOWN_MAP.getOrDefault(id, 0L);
+
+                if (now - lastUse < DAWN_TOTEM_COOLDOWN) {
+                    return true;
+                }
+
+                // prevent death
+                player.setHealth(1.0f);
+
+                // remove debuffs (totem-like feel)
+                player.clearStatusEffects();
+
+                // buffs
+                player.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.ABSORPTION,
+                        20 * 60,
+                        4
+                ));
+
+                player.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.REGENERATION,
+                        20 * 10,
+                        1
+                ));
+
+                player.addStatusEffect(new StatusEffectInstance(
+                        StatusEffects.RESISTANCE,
+                        20 * 20,
+                        1
+                ));
+
+                // visual totem effect
+                player.getWorld().sendEntityStatus(player, EntityStatuses.USE_TOTEM_OF_UNDYING);
+
+                // Launch the player upward
+                player.setVelocity(
+                        player.getVelocity().x,
+                        1.2, // Increase for a bigger launch
+                        player.getVelocity().z
+                );
+                player.velocityModified = true;
+
+                World world = player.getWorld();
+
+                // Blast nearby mobs away
+                double radius = 10.0;
+
+                List<LivingEntity> nearby = world.getEntitiesByClass(
+                        LivingEntity.class,
+                        player.getBoundingBox().expand(radius),
+                        blastEntity -> blastEntity != player
+                );
+
+                for (LivingEntity blastEntity : nearby) {
+
+                    Vec3d knockback = blastEntity.getPos()
+                            .subtract(player.getPos())
+                            .normalize()
+                            .multiply(2.5); // Horizontal strength
+
+                    blastEntity.setVelocity(
+                            knockback.x,
+                            0.8,           // Vertical launch
+                            knockback.z
+                    );
+
+                    blastEntity.velocityModified = true;
+
+                }
+
+                DAWN_TOTEM_COOLDOWN_MAP.put(id, now);
+
+                return false; // CANCEL death
+            }
             return true;
+
         }
-
-        DAWN_TOTEM_COOLDOWN_MAP.put(id, now);
-
-
-
-
-        float healthAfter = player.getHealth() - amount;
-
-        // ONLY trigger on lethal damage
-        if (healthAfter <= 0.0f) {
-
-            // prevent death
-            player.setHealth(1.0f);
-
-            // remove debuffs (totem-like feel)
-            player.clearStatusEffects();
-
-            // buffs
-            player.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.ABSORPTION,
-                    20 * 60,
-                    4
-            ));
-
-            player.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.REGENERATION,
-                    20 * 10,
-                    1
-            ));
-
-            player.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.RESISTANCE,
-                    20 * 20,
-                    1
-            ));
-
-
-            // visual totem effect
-            player.getWorld().sendEntityStatus(player, EntityStatuses.USE_TOTEM_OF_UNDYING);
-
-            return false; // CANCEL death
-    };
-
-    return true;
+        return true;
 }
 
 

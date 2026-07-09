@@ -103,7 +103,7 @@ public class StarfallItem extends SwordItem {
     public void onCraftByPlayer(ItemStack stack, World world, PlayerEntity player) {
         ModItems.playCraftedSound(world, player);
         ModItems.giveDragonEgg(player);
-        ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
+        //ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
 
         super.onCraftByPlayer(stack, world, player);
     }

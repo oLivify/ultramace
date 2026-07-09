@@ -55,7 +55,7 @@ public class VoidpiercerItem extends SwordItem {
         super.onCraftByPlayer(stack, world, player);
 
         if (!world.isClient) {
-            ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
+            //ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
             ModItems.giveDragonEgg(player);
             ModItems.playCraftedSound(world, player);
         }
