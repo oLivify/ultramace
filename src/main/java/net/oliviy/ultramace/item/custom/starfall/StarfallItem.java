@@ -25,6 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
 
@@ -43,9 +44,16 @@ public class StarfallItem extends SwordItem {
     private static final Map<UUID, Integer> COMBO = new HashMap<>();
     private static final Map<UUID, Long> LAST_HIT = new HashMap<>();
 
-    private static final long METEOR_COOLDOWN = 20000;
-    private static final long STARQUAKE_COOLDOWN = 30000;
-    private static final long ULTIMATE_COOLDOWN = 60000;
+    public static final long METEOR_COOLDOWN = 400L; //20 seconds
+    private static final String METEOR_COOLDOWN_ID = "starfall_meteor";
+
+
+    public static final long STARQUAKE_COOLDOWN = 400L; //30 seconds
+    private static final String STARQUAKE_COOLDOWN_ID = "starfall_starquake";
+
+    public static final long ULTIMATE_COOLDOWN = 1200L; //60 seconds
+    private static final String ULTIMATE_COOLDOWN_ID = "starfall_ultimate";
+
 
     public static final Set<UUID> BREATH_IMMUNE = new HashSet<>();
 
@@ -208,16 +216,16 @@ public class StarfallItem extends SwordItem {
             return TypedActionResult.pass(stack);
         }
 
-        UUID id = user.getUuid();
+        if (CooldownManager.isOnCooldown(
+                user,
+                METEOR_COOLDOWN_ID,
+                METEOR_COOLDOWN)) {
 
-        long now = System.currentTimeMillis();
-        long last = METEOR_COOLDOWN_MAP.getOrDefault(id, 0L);
-
-        if (now - last < METEOR_COOLDOWN) {
-            return TypedActionResult.fail(stack);
+            return TypedActionResult.pass(stack);
         }
 
-        METEOR_COOLDOWN_MAP.put(id, now);
+        CooldownManager.startCooldown(user, METEOR_COOLDOWN_ID);
+
 
         LivingEntity target = findEnemy(serverWorld, user);
         if (target == null) return TypedActionResult.pass(stack);
@@ -272,14 +280,17 @@ public class StarfallItem extends SwordItem {
 
     public void starquake(ServerWorld world, PlayerEntity player) {
 
-        UUID id = player.getUuid();
-        long now = System.currentTimeMillis();
+        ItemStack stack = player.getMainHandStack();
 
-        long last = STARQUAKE_COOLDOWN_MAP.getOrDefault(id, 0L);
+        if (CooldownManager.isOnCooldown(
+                player,
+                STARQUAKE_COOLDOWN_ID,
+                STARQUAKE_COOLDOWN)) {
 
-        if (now - last < STARQUAKE_COOLDOWN) return;
+            return;
+        }
 
-        STARQUAKE_COOLDOWN_MAP.put(id, now);
+        CooldownManager.startCooldown(player, STARQUAKE_COOLDOWN_ID);
 
         Vec3d center = player.getPos();
 
@@ -347,14 +358,15 @@ public class StarfallItem extends SwordItem {
 
     public void ultimate(ServerWorld world, PlayerEntity player) {
 
-        UUID id = player.getUuid();
-        long now = System.currentTimeMillis();
+        if (CooldownManager.isOnCooldown(
+                player,
+                ULTIMATE_COOLDOWN_ID,
+                ULTIMATE_COOLDOWN)) {
 
-        long last = ULTIMATE_COOLDOWN_MAP.getOrDefault(id, 0L);
+            return;
+        }
 
-        if (now - last < ULTIMATE_COOLDOWN) return;
-
-        ULTIMATE_COOLDOWN_MAP.put(id, System.currentTimeMillis());
+        CooldownManager.startCooldown(player, ULTIMATE_COOLDOWN_ID);
 
         player.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 400, 1));
         player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 400, 1));

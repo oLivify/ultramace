@@ -26,6 +26,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
+import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
 
@@ -42,9 +43,9 @@ public class StormcleaverItem extends SwordItem {
     private static final UUID REACH_UUID =
             UUID.fromString("2c2c1a6a-9c3b-4c7f-8b2c-111111111111");
 
-    public static final Map<UUID, Long> THUNDER_STRIKE_COOLDOWN_MAP = new HashMap<>();
 
-    private static final long THUNDER_COOLDOWN = 15_000L;
+    public static final long THUNDER_COOLDOWN = 300L;
+    private static final String THUNDER_COOLDOWN_ID = "stormcleaver_thunder";
 
 
 
@@ -126,6 +127,16 @@ public class StormcleaverItem extends SwordItem {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
 
+        if (CooldownManager.isOnCooldown(
+                user,
+                THUNDER_COOLDOWN_ID,
+                THUNDER_COOLDOWN)) {
+
+            return TypedActionResult.pass(user.getMainHandStack());
+        }
+
+
+
         user.setCurrentHand(hand);
 
         return TypedActionResult.consume(user.getStackInHand(hand));
@@ -139,16 +150,7 @@ public class StormcleaverItem extends SwordItem {
         if (world.isClient()) return;
         if (!(user instanceof PlayerEntity player)) return;
 
-        UUID id = player.getUuid();
-        long now = System.currentTimeMillis();
-
-        long lastUse = THUNDER_STRIKE_COOLDOWN_MAP.getOrDefault(id, 0L);
-
-        if (now - lastUse < THUNDER_COOLDOWN) {
-            return;
-        }
-
-        THUNDER_STRIKE_COOLDOWN_MAP.put(id, now);
+        CooldownManager.startCooldown(player, THUNDER_COOLDOWN_ID);
 
 
         int usedTicks = this.getMaxUseTime(stack, user) - remainingUseTicks;

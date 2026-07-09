@@ -1,13 +1,12 @@
 package net.oliviy.ultramace.hud;
 
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.data.AbilityHudData;
 import net.oliviy.ultramace.item.custom.bloodharvester.BloodharvesterItem;
 import net.oliviy.ultramace.item.custom.dawnrender.DawnrenderItem;
@@ -24,14 +23,14 @@ public class ModHud implements HudRenderCallback {
             new AbilityHudData(
                     "Blink Cut",
                     0xAA00FF,
-                    6000,
-                    id -> VoidpiercerItem.BLINK_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "voidpiercer_blink",
+                    VoidpiercerItem.BLINK_COOLDOWN
             ),
             new AbilityHudData(
                     "Rift Slash",
                     0xFF00AA,
-                    10000,
-                    id -> VoidpiercerItem.RIFT_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "voidpiercer_rift",
+                    VoidpiercerItem.RIFT_COOLDOWN
             )
     );
 
@@ -39,14 +38,14 @@ public class ModHud implements HudRenderCallback {
             new AbilityHudData(
                     "Divine Cleave",
                     0xFFD700,
-                    120000L,
-                    id -> DawnrenderItem.DIVINE_CLEAVE_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "dawnrender_divine_cleave",
+                    DawnrenderItem.DIVINE_CLEAVE_COOLDOWN
             ),
             new AbilityHudData(
-                    "Dawn Totem",
-                    0xFFD700,
-                    90000L,
-                    id -> DawnrenderItem.DAWN_TOTEM_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "Hero's Resolve",
+                    0xFFF4A3,
+                    "dawnrender_dawn_totem",
+                    DawnrenderItem.DAWN_TOTEM_COOLDOWN
             )
     );
 
@@ -54,8 +53,8 @@ public class ModHud implements HudRenderCallback {
             new AbilityHudData(
                     "Thunder Strike",
                     0x7DF9FF,
-                    15000,
-                    id -> StormcleaverItem.THUNDER_STRIKE_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "stormcleaver_thunder",
+                    StormcleaverItem.THUNDER_COOLDOWN
             )
     );
 
@@ -63,20 +62,19 @@ public class ModHud implements HudRenderCallback {
             new AbilityHudData(
                     "Meteor Shower",
                     0xFFAA00,
-                    20000,
-                    id -> StarfallItem.METEOR_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "starfall_meteor",
+                    StarfallItem.METEOR_COOLDOWN
             ),
             new AbilityHudData(
                     "Starquake",
                     0x55FFFF,
-                    30000,
-                    id -> StarfallItem.STARQUAKE_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "starfall_starquake",
+                    StarfallItem.STARQUAKE_COOLDOWN
             ),
             new AbilityHudData(
                     "Heaven's Judgment",
                     0xFF55FF,
-                    60000,
-                    id -> StarfallItem.ULTIMATE_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    "starfall_ultimate", StarfallItem.ULTIMATE_COOLDOWN
             )
     );
 
@@ -84,23 +82,23 @@ public class ModHud implements HudRenderCallback {
 
             new AbilityHudData(
                     "Blood Rite",
-                    0xB22222, // deep blood red
-                    10000,
-                    id -> BloodharvesterItem.BLOOD_RITE_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    0xB22222,
+                    "bloodharvester_blood_rite",
+                    BloodharvesterItem.BLOOD_RITE_COOLDOWN
             ),
 
             new AbilityHudData(
                     "Executioner's Sweep",
-                    0xFF1A1A, // sharp crimson red
-                    6000,
-                    id -> BloodharvesterItem.SWEEP_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    0xFF1A1A,
+                    "bloodharvester_sweep",
+                    BloodharvesterItem.SWEEP_COOLDOWN
             ),
 
             new AbilityHudData(
                     "Reaper's Domain",
-                    0xDA70D6, // dark void-red
-                    20000,
-                    id -> BloodharvesterItem.DOMAIN_COOLDOWN_MAP.getOrDefault(id, 0L)
+                    0xDA70D6,
+                    "bloodharvester_domain",
+                    BloodharvesterItem.DOMAIN_COOLDOWN
             )
     );
 
@@ -135,36 +133,31 @@ public class ModHud implements HudRenderCallback {
             return; // not holding a legendary weapon
         }
 
-        UUID id = player.getUuid();
-        long now = System.currentTimeMillis();
-
         int x = 10;
         int y = 10;
 
         for (AbilityHudData ability : abilities) {
 
-            long last = ability.lastUseGetter.apply(id);
-            long left = (last + ability.cooldownMs) - now;
+            boolean ready = CooldownManager.isReady(
+                    player,
+                    ability.cooldownId,
+                    ability.cooldownTicks
+            );
 
-            if (left > 0) {
-                context.drawText(
-                        client.textRenderer,
-                        ability.name + ": " + String.format("%.1fs", left / 1000.0f),
-                        x,
-                        y,
-                        ability.color,
-                        true
-                );
-            } else {
-                context.drawText(
-                        client.textRenderer,
-                        ability.name + ": READY",
-                        x,
-                        y,
-                        0x55FF55,
-                        true
-                );
-            }
+            String time = CooldownManager.getFormattedTime(
+                    player,
+                    ability.cooldownId,
+                    ability.cooldownTicks
+            );
+
+            context.drawText(
+                    client.textRenderer,
+                    ability.name + ": " + time,
+                    x,
+                    y,
+                    ready ? 0x55FF55 : ability.color,
+                    true
+            );
 
             y += 10;
         }

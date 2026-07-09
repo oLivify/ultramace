@@ -19,11 +19,9 @@ public class CooldownManager {
      */
     public static void startCooldown(PlayerEntity player, String abilityId) {
 
-        long currentTick = player.getWorld().getTime();
-
         COOLDOWNS
                 .computeIfAbsent(player.getUuid(), uuid -> new HashMap<>())
-                .put(abilityId, currentTick);
+                .put(abilityId, player.getWorld().getTime());
     }
 
     /**
@@ -98,5 +96,27 @@ public class CooldownManager {
      */
     public static int getRemainingSeconds(PlayerEntity player, String abilityId, long cooldownTicks) {
         return (int) Math.ceil(getRemainingTicks(player, abilityId, cooldownTicks) / 20.0);
+    }
+
+    public static String getFormattedTime(PlayerEntity player,
+                                          String abilityId,
+                                          long cooldownTicks) {
+
+        long remaining = getRemainingTicks(player, abilityId, cooldownTicks);
+
+        if (remaining <= 0) {
+            return "Ready";
+        }
+
+        long seconds = (remaining + 19) / 20;
+
+        long minutes = seconds / 60;
+        seconds %= 60;
+
+        if (minutes > 0) {
+            return minutes + ":" + String.format("%02d", seconds);
+        }
+
+        return seconds + "s";
     }
 }

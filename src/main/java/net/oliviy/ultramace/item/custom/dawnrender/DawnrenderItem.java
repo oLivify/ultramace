@@ -20,23 +20,21 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+
 
 
 public class DawnrenderItem extends SwordItem {
 
-    public static final Map<UUID, Long> DIVINE_CLEAVE_COOLDOWN_MAP = new HashMap<>();
-    private static final long DIVINE_CLEAVE_COOLDOWN = 120_000L;
+    public static final long DIVINE_CLEAVE_COOLDOWN = 20L * 60 * 2; // 2400 ticks
+    private static final String DIVINE_CLEAVE_ID = "dawnrender_divine_cleave";
 
-    public static final Map<UUID, Long> DAWN_TOTEM_COOLDOWN_MAP = new HashMap<>();
-    private static final long DAWN_TOTEM_COOLDOWN = 90_000L;
-
+    public static final long DAWN_TOTEM_COOLDOWN = 20L * 90;         // 1800 ticks
+    private static final String DAWN_TOTEM_ID = "dawnrender_dawn_totem";
 
 
     public DawnrenderItem(Settings settings) {
@@ -116,22 +114,21 @@ public class DawnrenderItem extends SwordItem {
         ItemStack stack = user.getStackInHand(hand);
 
         if (!(world instanceof ServerWorld serverWorld)) {
-            return TypedActionResult.success(stack);
+            return TypedActionResult.pass(stack);
         }
 
 
         if (!world.isClient) {
 
-            UUID id = user.getUuid();
-            long now = System.currentTimeMillis();
+            if (CooldownManager.isOnCooldown(
+                    user,
+                    DIVINE_CLEAVE_ID,
+                    DIVINE_CLEAVE_COOLDOWN)) {
 
-            long lastUse = DIVINE_CLEAVE_COOLDOWN_MAP.getOrDefault(id, 0L);
-
-            if (now - lastUse < DIVINE_CLEAVE_COOLDOWN) {
-                return super.use(world, user, hand);
+                return TypedActionResult.pass(stack);
             }
 
-            DIVINE_CLEAVE_COOLDOWN_MAP.put(id, now);
+            CooldownManager.startCooldown(user, DIVINE_CLEAVE_ID);
 
             // direction player is looking
             Vec3d lookDir = user.getRotationVec(1.0f);
@@ -180,12 +177,11 @@ public class DawnrenderItem extends SwordItem {
             // ONLY trigger on lethal damage
             if (healthAfter <= 0.0f) {
 
-                UUID id = player.getUuid();
-                long now = System.currentTimeMillis();
+                if (CooldownManager.isOnCooldown(
+                        player,
+                        DAWN_TOTEM_ID,
+                        DAWN_TOTEM_COOLDOWN)) {
 
-                long lastUse = DAWN_TOTEM_COOLDOWN_MAP.getOrDefault(id, 0L);
-
-                if (now - lastUse < DAWN_TOTEM_COOLDOWN) {
                     return true;
                 }
 
@@ -253,7 +249,8 @@ public class DawnrenderItem extends SwordItem {
 
                 }
 
-                DAWN_TOTEM_COOLDOWN_MAP.put(id, now);
+                CooldownManager.startCooldown(player, DAWN_TOTEM_ID);
+
 
                 return false; // CANCEL death
             }

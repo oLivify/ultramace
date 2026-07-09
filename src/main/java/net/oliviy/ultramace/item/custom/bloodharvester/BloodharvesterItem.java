@@ -25,6 +25,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldEvents;
+import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.effects.ModEffects;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
@@ -44,13 +45,23 @@ public class BloodharvesterItem extends SwordItem {
     // Cooldowns
     // =========================
 
-    private static final int BLOOD_RITE_COOLDOWN = 200;
-    private static final int SWEEP_COOLDOWN = 120;
+    public static final long BLOOD_RITE_COOLDOWN = 200; //10 sec
+    private static final String BLOOD_RITE_COOLDOWN_ID = "bloodharvester_blood_rite";
+
+    public static final long SWEEP_COOLDOWN = 120; // 6 seconds
+    private static final String SWEEP_COOLDOWN_ID = "bloodharvester_sweep";
+
+
+    public static final long DOMAIN_COOLDOWN = 400; // 20 seconds
+    private static final String DOMAIN_COOLDOWN_ID = "bloodharvester_domain";
+
+
+
 
     private final Map<UUID, Long> lastBloodRite = new HashMap<>();
     private final Map<UUID, Long> lastSweep = new HashMap<>();
 
-    private static final int DOMAIN_COOLDOWN = 200;
+
 
     public static final Map<UUID, Long> BLOOD_RITE_COOLDOWN_MAP = new HashMap<>();
     public static final Map<UUID, Long> SWEEP_COOLDOWN_MAP = new HashMap<>();
@@ -220,18 +231,15 @@ public class BloodharvesterItem extends SwordItem {
 
         if(player.isSneaking()){
 
-            UUID id = player.getUuid();
-            long now = System.currentTimeMillis();
+            if (CooldownManager.isOnCooldown(
+                    player,
+                    SWEEP_COOLDOWN_ID,
+                    SWEEP_COOLDOWN)) {
 
-            if(lastSweep.containsKey(id)
-                    && now-lastSweep.get(id) < SWEEP_COOLDOWN*50){
-
-                return super.postHit(stack,target,attacker);
-
+                return super.postHit(stack, target, attacker);
             }
 
-            lastSweep.put(id,now);
-            SWEEP_COOLDOWN_MAP.put(id,System.currentTimeMillis());
+            CooldownManager.startCooldown(player, SWEEP_COOLDOWN_ID);
 
             executionSweep(player,target);
         }
@@ -248,17 +256,15 @@ public class BloodharvesterItem extends SwordItem {
         if(world.isClient())
             return TypedActionResult.pass(user.getStackInHand(hand));
 
-        UUID id=user.getUuid();
-        long now=System.currentTimeMillis();
+        if (CooldownManager.isOnCooldown(
+                user,
+                BLOOD_RITE_COOLDOWN_ID,
+                BLOOD_RITE_COOLDOWN)) {
 
-        if(lastBloodRite.containsKey(id)
-                && now-lastBloodRite.get(id)<BLOOD_RITE_COOLDOWN*50){
-
-            return TypedActionResult.fail(user.getStackInHand(hand));
+            return TypedActionResult.pass(user.getMainHandStack());
         }
 
-        lastBloodRite.put(id,now);
-        BLOOD_RITE_COOLDOWN_MAP.put(id,System.currentTimeMillis());
+        CooldownManager.startCooldown(user, BLOOD_RITE_COOLDOWN_ID);
 
         bloodRite(world,user);
 
@@ -314,16 +320,15 @@ public class BloodharvesterItem extends SwordItem {
 
     private void reaperDomain(World world, PlayerEntity player) {
 
-        UUID id = player.getUuid();
-        long now = System.currentTimeMillis();
+        if (CooldownManager.isOnCooldown(
+                player,
+                DOMAIN_COOLDOWN_ID,
+                DOMAIN_COOLDOWN)) {
 
-        long last = DOMAIN_COOLDOWN_MAP.getOrDefault(id, 0L);
-
-        if (now - last < DOMAIN_COOLDOWN * 50) {
             return;
         }
 
-        DOMAIN_COOLDOWN_MAP.put(id, now);
+        CooldownManager.startCooldown(player, DOMAIN_COOLDOWN_ID);
 
         double radius = 10.0;
 

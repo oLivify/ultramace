@@ -9,6 +9,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.item.SwordItem;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -19,6 +20,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
 
@@ -30,15 +32,16 @@ import java.util.UUID;
 public class VoidpiercerItem extends SwordItem {
 
 
-    private static final int BLINK_COOLDOWN = 120; // 6s 120
-    private static final int RIFT_COOLDOWN = 200;  // 10s 200
+    public static final int BLINK_COOLDOWN = 120;
+    private static final String BLINK_COOLDOWN_ID = "voidpiercer_blink";
 
-    private final Map<UUID, Long> lastBlinkUse = new HashMap<>();
-    private final Map<UUID, Long> lastRiftUse = new HashMap<>();
+    public static final int RIFT_COOLDOWN = 200;
+    private static final String RIFT_COOLDOWN_ID = "voidpiercer_rift";
+
+
     private final Map<UUID, Long> lastHit = new HashMap<>();
 
-    public static final Map<UUID, Long> BLINK_COOLDOWN_MAP = new HashMap<>();
-    public static final Map<UUID, Long> RIFT_COOLDOWN_MAP = new HashMap<>();
+
 
     private static final UUID HEALTH_UUID =
             UUID.fromString("c2f4c2d1-3d2a-4a8b-9d1a-1f7e6a9c1111");
@@ -179,16 +182,15 @@ public class VoidpiercerItem extends SwordItem {
 
         if (attacker.isSneaking()) {
 
-            UUID rID = attacker.getUuid();
-            long rNOW = System.currentTimeMillis();
+            if(attacker instanceof PlayerEntity user) {
+                if (CooldownManager.isOnCooldown(user, RIFT_COOLDOWN_ID, RIFT_COOLDOWN)) {
+                    return super.postHit(stack, target, attacker);
+                }
 
-            if (lastRiftUse.containsKey(rID) &&
-                    rNOW - lastRiftUse.get(rID) < RIFT_COOLDOWN * 50) {
-                return super.postHit(stack, target, attacker);
+                CooldownManager.startCooldown(user, RIFT_COOLDOWN_ID);
             }
 
-            lastRiftUse.put(rID, rNOW);
-            RIFT_COOLDOWN_MAP.put(attacker.getUuid(), System.currentTimeMillis());
+
 
             riftSlash(attacker, stack, target, world);
 
@@ -202,17 +204,14 @@ public class VoidpiercerItem extends SwordItem {
 
         if (world.isClient) return TypedActionResult.pass(user.getStackInHand(hand));
 
+        ItemStack stack = user.getMainHandStack();
 
-        UUID id = user.getUuid();
-        long now = System.currentTimeMillis();
 
-        if (lastBlinkUse.containsKey(id) &&
-                now - lastBlinkUse.get(id) < BLINK_COOLDOWN * 50) {
-            return TypedActionResult.fail(user.getStackInHand(hand));
+        if (CooldownManager.isOnCooldown(user, BLINK_COOLDOWN_ID, BLINK_COOLDOWN)) {
+            return TypedActionResult.pass(stack);
         }
 
-        lastBlinkUse.put(id, now);
-        BLINK_COOLDOWN_MAP.put(user.getUuid(), System.currentTimeMillis());
+        CooldownManager.startCooldown(user, BLINK_COOLDOWN_ID);
 
 
         VoidPearlEntity pearl = new VoidPearlEntity(world, user);
