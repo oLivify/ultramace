@@ -25,32 +25,34 @@ public class BleedEffect extends StatusEffect {
     @Override
     public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
 
-        if (entity.getWorld() instanceof ServerWorld world) {
-
-            double x = entity.getX() + (entity.getRandom().nextDouble() - 0.5) * entity.getWidth();
-            double y = entity.getY() + entity.getRandom().nextDouble() * entity.getHeight();
-            double z = entity.getZ() + (entity.getRandom().nextDouble() - 0.5) * entity.getWidth();
-
-            world.spawnParticles(
-                    ModParticles.BLEED,
-                    x,
-                    y,
-                    z,
-                    1,
-                    0,
-                    0,
-                    0,
-                    0
-            );
-
-        }
-
         // Damage every second instead of every tick
         if (entity.age % 20 == 0) {
             entity.damage(
                     entity.getDamageSources().magic(),
                     1.0f + amplifier
             );
+
+            if (entity.getWorld() instanceof ServerWorld world) {
+                double x = entity.getX() + (entity.getRandom().nextDouble() - 0.5) * entity.getWidth();
+                double y = entity.getY() + entity.getRandom().nextDouble() * entity.getHeight();
+                double z = entity.getZ() + (entity.getRandom().nextDouble() - 0.5) * entity.getWidth();
+
+                world.spawnParticles(
+                        ModParticles.BLEED,
+                        x,
+                        y,
+                        z,
+                        3,
+                        0,
+                        0,
+                        0,
+                        0
+                );
+
+            }
+
+
+
         }
 
 

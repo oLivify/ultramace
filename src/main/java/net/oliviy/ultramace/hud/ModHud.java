@@ -46,6 +46,12 @@ public class ModHud implements HudRenderCallback {
                     0xFFF4A3,
                     "dawnrender_dawn_totem",
                     DawnrenderItem.DAWN_TOTEM_COOLDOWN
+            ),
+            new AbilityHudData(
+                    "Celestial Binding",
+                    0xFFB000,
+                    "dawnrender_celestial_binding",
+                    DawnrenderItem.CELESTIAL_BINDING_COOLDOWN
             )
     );
 

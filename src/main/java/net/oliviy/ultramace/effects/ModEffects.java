@@ -14,6 +14,11 @@ public class ModEffects {
     public static final RegistryEntry<StatusEffect> BLEEDING = registerStatusEffect("bleeding",
             new BleedEffect(StatusEffectCategory.HARMFUL, 0x8B0000));
 
+    public static final RegistryEntry<StatusEffect> PARALYSIS = registerStatusEffect("paralysis",
+            new ParalysisEffect(StatusEffectCategory.HARMFUL, 0x7FDBFF));
+
+
+
 
 
 

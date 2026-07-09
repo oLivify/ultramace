@@ -42,13 +42,6 @@ public class VoidpiercerItem extends SwordItem {
     private final Map<UUID, Long> lastHit = new HashMap<>();
 
 
-
-    private static final UUID HEALTH_UUID =
-            UUID.fromString("c2f4c2d1-3d2a-4a8b-9d1a-1f7e6a9c1111");
-
-    private static final UUID KB_UUID =
-            UUID.fromString("a8c1f2b3-9d4e-4c7a-8d2b-2a9f1e3c2222");
-
     public VoidpiercerItem(Settings settings) {
         super(ModToolMaterials.MAGIC_INGOT, settings);
     }
@@ -71,79 +64,10 @@ public class VoidpiercerItem extends SwordItem {
         if (world.isClient()) return;
         if (!(entity instanceof PlayerEntity player)) return;
 
-        var healthAttr = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
-        var kbAttr = player.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE);
-
-        if (healthAttr == null || kbAttr == null) return;
-
-        UUID healthId = HEALTH_UUID;
-        UUID kbId = KB_UUID;
-
-        // =========================
-        // HEALTH BONUS (ONLY WHEN HELD)
-        // =========================
         if (selected) {
-
-            healthAttr.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("voidpiercer_healthboost"),
-                            20.0,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
-
-            healthAttr.addTemporaryModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("voidpiercer_healthboost"),
-                            6,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
-
-
-
-            // KB bonus only while sneaking + holding
             if (player.isSneaking()) {
-
-                kbAttr.removeModifier(
-                        new EntityAttributeModifier(
-                                Identifier.of("voidpiercer_kb"),
-                                .5,
-                                EntityAttributeModifier.Operation.ADD_VALUE
-                        )
-                );
-
-                kbAttr.addTemporaryModifier(
-                        new EntityAttributeModifier(
-                                Identifier.of("voidpiercer_kb"),
-                                .5,
-                                EntityAttributeModifier.Operation.ADD_VALUE
-                        )
-                );
-
                 blackHole(world, player);
             }
-
-        } else {
-
-            // =========================
-            // REMOVE WHEN NOT HELD
-            // =========================
-
-            healthAttr.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("voidpiercer_healthboost"),
-                            6,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
-            kbAttr.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("voidpiercer_kb"),
-                            .5,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
 
         }
     }

@@ -26,6 +26,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.oliviy.ultramace.cooldown.CooldownManager;
+import net.oliviy.ultramace.item.ItemAttributeManager;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
 
@@ -37,9 +38,6 @@ public class StarfallItem extends SwordItem {
     // COOLDOWNS
     // =========================
 
-    public static final Map<UUID, Long> METEOR_COOLDOWN_MAP = new HashMap<>();
-    public static final Map<UUID, Long> STARQUAKE_COOLDOWN_MAP = new HashMap<>();
-    public static final Map<UUID, Long> ULTIMATE_COOLDOWN_MAP = new HashMap<>();
 
     private static final Map<UUID, Integer> COMBO = new HashMap<>();
     private static final Map<UUID, Long> LAST_HIT = new HashMap<>();
@@ -387,37 +385,11 @@ public class StarfallItem extends SwordItem {
             });
         }
 
-        var healthAttribute = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
-        if (healthAttribute == null) return;
-
-        // always remove first (prevents stacking bugs)
-        healthAttribute.removeModifier(
-                new EntityAttributeModifier(
-                        Identifier.of("ultimate_health"),
-                        20.0,
-                        EntityAttributeModifier.Operation.ADD_VALUE
-                )
-        );
-
-        healthAttribute.addTemporaryModifier(
-                new EntityAttributeModifier(
-                        Identifier.of("ultimate_health"),
-                        20.0,
-                        EntityAttributeModifier.Operation.ADD_VALUE
-                )
-        );
+        ItemAttributeManager.applyUltimateEffects(player);
+        ModItems.healPlayer(player, 20f);
 
         schedule(1800, () -> { // 30 seconds = 600 ticks
-
-
-            // always remove first (prevents stacking bugs)
-            healthAttribute.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("ultimate_health"),
-                            20.0,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
+            ItemAttributeManager.removeUltimateEffects(player);
 
     });
 

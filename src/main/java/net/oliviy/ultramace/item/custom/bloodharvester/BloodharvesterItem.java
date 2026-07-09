@@ -58,33 +58,12 @@ public class BloodharvesterItem extends SwordItem {
 
 
 
-    private final Map<UUID, Long> lastBloodRite = new HashMap<>();
-    private final Map<UUID, Long> lastSweep = new HashMap<>();
-
-
-
-    public static final Map<UUID, Long> BLOOD_RITE_COOLDOWN_MAP = new HashMap<>();
-    public static final Map<UUID, Long> SWEEP_COOLDOWN_MAP = new HashMap<>();
-    public static final Map<UUID, Long> DOMAIN_COOLDOWN_MAP = new HashMap<>();
-
-
     // =========================
     // Blood Stacks
     // =========================
 
-    private static final Map<UUID, Integer> BLOOD_STACKS = new HashMap<>();
-    private static final Map<UUID, Long> LAST_STACK_GAIN = new HashMap<>();
-
-
-    // =========================
-    // Attribute UUIDs
-    // =========================
-
-    private static final UUID SPEED_UUID =
-            UUID.fromString("11111111-1111-1111-1111-111111111111");
-
-    private static final UUID DAMAGE_UUID =
-            UUID.fromString("22222222-2222-2222-2222-222222222222");
+    public static final Map<UUID, Integer> BLOOD_STACKS = new HashMap<>();
+    private static final Map<UUID, Long> NEXT_BLOOD_DECAY = new HashMap<>();
 
     private static final Set<UUID> SWORD_IN_OFFHAND = new HashSet<>();
 
@@ -108,13 +87,9 @@ public class BloodharvesterItem extends SwordItem {
         if(world.isClient()) return;
         if(!(entity instanceof PlayerEntity player)) return;
 
-        var speed = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
-        var damage = player.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
-        var health = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
 
         int stacks = BLOOD_STACKS.getOrDefault(player.getUuid(), 0);
 
-        if(speed == null || damage == null || health == null) return;
 
         bloodStackEffects(player);
 
@@ -126,66 +101,12 @@ public class BloodharvesterItem extends SwordItem {
             SWORD_IN_OFFHAND.remove(player.getUuid());
         }
 
-        health.removeModifier(
-                new EntityAttributeModifier(
-                        Identifier.of("blood_health"),
-                        .5 * stacks,
-                        EntityAttributeModifier.Operation.ADD_VALUE
-                )
-        );
-
-        health.addTemporaryModifier(
-                new EntityAttributeModifier(
-                        Identifier.of("blood_health"),
-                        stacks * .5,
-                        EntityAttributeModifier.Operation.ADD_VALUE
-                )
-        );
-
         if(selected){
-
 
             player.sendMessage(
                     Text.literal("§4Blood Stacks: " + stacks +"§r"),
                     true
             );
-
-
-            speed.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("blood_speed"),
-                            0.05,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                    )
-            );
-
-            damage.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("blood_damage"),
-                            2,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
-
-
-
-            speed.addTemporaryModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("blood_speed"),
-                            stacks * 0.005,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                    )
-            );
-
-            damage.addTemporaryModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("blood_damage"),
-                            stacks * .2,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
-
-
 
             if (player.getHealth() <= player.getMaxHealth() * 0.5f) {
                 crimsonFeast(world,player);
@@ -193,29 +114,14 @@ public class BloodharvesterItem extends SwordItem {
 
 
 
-            decayBloodStacks(player);
-
-        }else{
-
-            speed.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("blood_speed"),
-                            0,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
-                    )
-            );
-
-            damage.removeModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("blood_damage"),
-                            0,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
 
         }
 
+
+        decayBloodStacks(player);
+
     }
+
 
     @Override
     public boolean postHit(ItemStack stack, LivingEntity target, LivingEntity attacker) {
@@ -225,7 +131,7 @@ public class BloodharvesterItem extends SwordItem {
 
         gainBloodStack(player);
 
-        healPlayer(player,2f);
+        ModItems.healPlayer(player,.1f);
 
         applyBleed(target);
 
@@ -249,9 +155,7 @@ public class BloodharvesterItem extends SwordItem {
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(World world,
-                                            PlayerEntity user,
-                                            Hand hand){
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand){
 
         if(world.isClient())
             return TypedActionResult.pass(user.getStackInHand(hand));
@@ -263,7 +167,6 @@ public class BloodharvesterItem extends SwordItem {
 
             return TypedActionResult.pass(user.getMainHandStack());
         }
-
         CooldownManager.startCooldown(user, BLOOD_RITE_COOLDOWN_ID);
 
         bloodRite(world,user);
@@ -288,14 +191,7 @@ public class BloodharvesterItem extends SwordItem {
 
         for (LivingEntity target : targets) {
 
-            // Apply bleed effect (simple version using vanilla effects)
-            target.addStatusEffect(
-                    new StatusEffectInstance(
-                            ModEffects.BLEEDING,
-                            100,
-                            0
-                    )
-            );
+            applyBleed(target);
 
             // tiny damage tick (true-feeling bleed)
             target.damage(player.getDamageSources().magic(), 1.0f);
@@ -366,7 +262,7 @@ public class BloodharvesterItem extends SwordItem {
                     player.getX(),
                     player.getY() + 1,
                     player.getZ(),
-                    25,
+                    10,
                     2.5, 1.0, 2.5,
                     0.02
             );
@@ -376,7 +272,7 @@ public class BloodharvesterItem extends SwordItem {
                     player.getX(),
                     player.getY() + 1,
                     player.getZ(),
-                    15,
+                    25,
                     2.0, 1.0, 2.0,
                     0.01
             );
@@ -404,8 +300,8 @@ public class BloodharvesterItem extends SwordItem {
         for (LivingEntity target : targets) {
 
             target.damage(player.getDamageSources().magic(), 10.0f);
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 120, 1));
-            target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 120, 1));
+            target.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 40, 1));
+            target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 80, 1));
 
             applyBleed(target);
 
@@ -468,11 +364,10 @@ public class BloodharvesterItem extends SwordItem {
 
             if (projection < 0 || projection > 5) continue;
 
-            // heavy execution damage
             float damage = 8.0f;
 
             if (target.getHealth() <= target.getMaxHealth() * 0.25f) {
-                damage = 999.0f; // EXECUTE
+                damage = 999.0f;
                 gainBloodStack(player);
                 gainBloodStack(player);
             }
@@ -511,10 +406,6 @@ public class BloodharvesterItem extends SwordItem {
         );
     }
 
-    private void healPlayer(PlayerEntity player,float amount){
-        player.heal(amount);
-    }
-
     private void gainBloodStack(PlayerEntity player){
 
         UUID id=player.getUuid();
@@ -525,7 +416,6 @@ public class BloodharvesterItem extends SwordItem {
             BLOOD_STACKS.put(id,stacks+1);
         }
 
-        LAST_STACK_GAIN.put(id,System.currentTimeMillis());
 
     }
 
@@ -533,21 +423,26 @@ public class BloodharvesterItem extends SwordItem {
 
         UUID id = player.getUuid();
 
-        if (!LAST_STACK_GAIN.containsKey(id)) return;
+        if (!NEXT_BLOOD_DECAY.containsKey(id)) {
+            return;
+        }
 
-        long now = System.currentTimeMillis();
-        long lastGain = LAST_STACK_GAIN.get(id);
-
-        if (now - lastGain >= 5000) {
+        if(player.age >= NEXT_BLOOD_DECAY.getOrDefault(id, Long.MAX_VALUE)) {
 
             int stacks = BLOOD_STACKS.getOrDefault(id, 0);
 
-            if (stacks > 0) {
+            if(stacks > 0) {
                 BLOOD_STACKS.put(id, stacks - 1);
-                LAST_STACK_GAIN.put(id, now);
+
+                NEXT_BLOOD_DECAY.put(
+                        id,
+                        player.age + 50L
+                );
             }
         }
+
     }
+
 
 
     private void bloodStackEffects(PlayerEntity player) {
@@ -563,7 +458,7 @@ public class BloodharvesterItem extends SwordItem {
                     player.getX(),
                     player.getY() + 0.05,
                     player.getZ(),
-                    stacks / 2,
+                    4,
                     0.5, 0.05, 0.5,
                     0.01
             );
@@ -581,13 +476,11 @@ public class BloodharvesterItem extends SwordItem {
                 Math.min(current + amount, 20)
         );
 
-        LAST_STACK_GAIN.put(
+        NEXT_BLOOD_DECAY.put(
                 id,
-                System.currentTimeMillis()
+                player.age + 50L
         );
     }
-
-
 
 
     // MACE ABILITIES BELOW

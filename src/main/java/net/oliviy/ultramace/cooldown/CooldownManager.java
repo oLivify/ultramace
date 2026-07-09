@@ -91,12 +91,6 @@ public class CooldownManager {
         return !isOnCooldown(player, abilityId, cooldownTicks);
     }
 
-    /**
-     * Remaining cooldown in seconds.
-     */
-    public static int getRemainingSeconds(PlayerEntity player, String abilityId, long cooldownTicks) {
-        return (int) Math.ceil(getRemainingTicks(player, abilityId, cooldownTicks) / 20.0);
-    }
 
     public static String getFormattedTime(PlayerEntity player,
                                           String abilityId,

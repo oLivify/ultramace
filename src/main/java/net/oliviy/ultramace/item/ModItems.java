@@ -143,5 +143,10 @@ public class ModItems {
         stack.addEnchantment(entry, level);
     }
 
+    public static void healPlayer(PlayerEntity player,float amount){
+        player.heal(amount);
+    }
+
+
 
 }
