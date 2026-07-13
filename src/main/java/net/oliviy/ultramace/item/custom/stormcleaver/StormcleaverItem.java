@@ -7,6 +7,8 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.decoration.ArmorStandEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -19,7 +21,6 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.math.Direction;
@@ -33,6 +34,7 @@ import net.oliviy.ultramace.item.ModToolMaterials;
 import java.util.*;
 import java.util.function.Predicate;
 
+
 public class StormcleaverItem extends SwordItem {
     public StormcleaverItem(Settings settings) {
         super(ModToolMaterials.MAGIC_INGOT, settings);
@@ -40,12 +42,13 @@ public class StormcleaverItem extends SwordItem {
 
     public static final Set<UUID> LIGHTNING_IMMUNE = new HashSet<>();
     private static final Map<UUID, Integer> lastPercent = new HashMap<>();
-    private static final UUID REACH_UUID =
-            UUID.fromString("2c2c1a6a-9c3b-4c7f-8b2c-111111111111");
 
 
     public static final long THUNDER_COOLDOWN = 300L;
     private static final String THUNDER_COOLDOWN_ID = "stormcleaver_thunder";
+
+    private static final Set<UUID> SWORD_IN_OFFHAND = new HashSet<>();
+
 
 
 
@@ -54,7 +57,6 @@ public class StormcleaverItem extends SwordItem {
 
         ModItems.playCraftedSound(world, player);
         ModItems.giveDragonEgg(player);
-        //ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
         super.onCraftByPlayer(stack, world, player);
     }
 
@@ -64,29 +66,21 @@ public class StormcleaverItem extends SwordItem {
 
         if (!(entity instanceof PlayerEntity player)) return;
 
-        var attribute = player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE);
-        if (attribute == null) return;
 
-        // always remove first (prevents stacking bugs)
-        attribute.removeModifier(
-                new EntityAttributeModifier(
-                        Identifier.of("stormcleaver_reach"),
-                        3.0,
-                        EntityAttributeModifier.Operation.ADD_VALUE
-                )
-        );
-
-        // apply only when held in main hand
-        if (player.getMainHandStack().isOf(ModItems.STORMCLEAVER)) {
-
-            attribute.addTemporaryModifier(
-                    new EntityAttributeModifier(
-                            Identifier.of("stormcleaver_reach"),
-                            3.0,
-                            EntityAttributeModifier.Operation.ADD_VALUE
-                    )
-            );
+        if (player.getOffHandStack().isOf(ModItems.STORMCLEAVER)) {
+            if (SWORD_IN_OFFHAND.add(player.getUuid())) {
+                summonStorm(world);
+            }
+        } else {
+            SWORD_IN_OFFHAND.remove(player.getUuid());
         }
+
+
+        if(world.isThundering()) {
+            checkLightningStrike(world, player);
+        }
+
+
     }
 
     @Override
@@ -108,8 +102,21 @@ public class StormcleaverItem extends SwordItem {
 
                 world.spawnEntity(lightning);
 
+                if(attacker instanceof PlayerEntity player) {
+                    target.damage(world.getDamageSources().playerAttack(player), 5);
+                }
+
+
+
             }
         }
+
+        if(world.isRaining()) {
+            if(attacker instanceof PlayerEntity player) {
+                target.damage(world.getDamageSources().playerAttack(player), 6);
+            }
+        }
+
         stormMaceHit(stack, target, attacker);
         return super.postHit(stack, target, attacker);
     }
@@ -187,6 +194,8 @@ public class StormcleaverItem extends SwordItem {
                 lightning.setCosmetic(true);
 
                 world.spawnEntity(lightning);
+
+                target.damage(world.getDamageSources().playerAttack(player), 5);
             }
 
             // 💥 damage scales with charge
@@ -215,6 +224,8 @@ public class StormcleaverItem extends SwordItem {
                     3, 2, 3,
                     0.2
             );
+
+            summonStorm(serverWorld);
         }
 
 
@@ -222,16 +233,19 @@ public class StormcleaverItem extends SwordItem {
     }
 
 
+    private void summonStorm(World world) {
+        if (world instanceof ServerWorld serverWorld) {
+
+            serverWorld.setWeather(
+                    0,
+                    4800,
+                    true,
+                    true
+            );
+        }
 
 
-
-
-
-
-
-
-
-
+    }
 
     @Override
     public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
@@ -271,6 +285,26 @@ public class StormcleaverItem extends SwordItem {
                     0.3, 0.4, 0.3,
                     0.05
             );
+        }
+    }
+
+
+
+
+    private void checkLightningStrike(World world, PlayerEntity player) {
+        List<LightningEntity> lightning = world.getEntitiesByClass(
+                LightningEntity.class,
+                player.getBoundingBox().expand(2),
+                e -> true
+        );
+
+        if (!lightning.isEmpty()) {
+            player.heal(4.0f);
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 100, 4));
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 100, 4));
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 100, 4));
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 100, 0));
+            player.addStatusEffect(new StatusEffectInstance(StatusEffects.HASTE, 100, 3));
         }
     }
 

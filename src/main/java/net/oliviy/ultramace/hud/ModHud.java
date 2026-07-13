@@ -32,6 +32,12 @@ public class ModHud implements HudRenderCallback {
                     0xFF00AA,
                     "voidpiercer_rift",
                     VoidpiercerItem.RIFT_COOLDOWN
+            ),
+            new AbilityHudData(
+                    "Enders Cataclysm",
+                    0x42002D,
+                    "voidpiercer_cataclysm",
+                    VoidpiercerItem.CATACLYSM_COOLDOWN
             )
     );
 

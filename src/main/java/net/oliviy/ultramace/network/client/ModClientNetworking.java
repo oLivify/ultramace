@@ -30,7 +30,6 @@ public class ModClientNetworking {
                     ClientParalysis.setParalyzed(
                             payload.paralyzed()
                     );
-                    System.out.println("Paralyzed: " + payload.paralyzed());
 
 
                 }

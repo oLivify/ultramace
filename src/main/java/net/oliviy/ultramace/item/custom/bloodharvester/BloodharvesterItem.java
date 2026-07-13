@@ -130,7 +130,8 @@ public class BloodharvesterItem extends SwordItem {
         if(!(attacker instanceof PlayerEntity player))
             return super.postHit(stack,target,attacker);
 
-        gainBloodStack(player);
+
+        addBloodStacks(player, 1);
 
         ModItems.healPlayer(player,.1f);
 
@@ -154,6 +155,9 @@ public class BloodharvesterItem extends SwordItem {
         bloodMaceStrike(stack, target, attacker);
         return super.postHit(stack,target,attacker);
     }
+
+
+
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand){
@@ -284,7 +288,7 @@ public class BloodharvesterItem extends SwordItem {
         }
 
         // reward stacks for staying in domain
-        gainBloodStack(player);
+        addBloodStacks(player, 1);
     }
 
     private void bloodRite(World world, PlayerEntity player) {
@@ -331,8 +335,7 @@ public class BloodharvesterItem extends SwordItem {
         // bonus reward if good hit
         if (hitCount >= 3) {
             player.heal(6.0f);
-            gainBloodStack(player);
-            gainBloodStack(player);
+            addBloodStacks(player, 2);
         }
 
         // explosion visuals
@@ -375,8 +378,7 @@ public class BloodharvesterItem extends SwordItem {
 
             if (target.getHealth() <= target.getMaxHealth() * 0.25f) {
                 damage = 999.0f;
-                gainBloodStack(player);
-                gainBloodStack(player);
+                addBloodStacks(player, 2);
             }
 
             target.damage(player.getDamageSources().playerAttack(player), damage);
@@ -413,18 +415,6 @@ public class BloodharvesterItem extends SwordItem {
         );
     }
 
-    private void gainBloodStack(PlayerEntity player){
-
-        UUID id=player.getUuid();
-
-        int stacks=BLOOD_STACKS.getOrDefault(id,0);
-
-        if(stacks<20){
-            BLOOD_STACKS.put(id,stacks+1);
-        }
-
-
-    }
 
     private void decayBloodStacks(PlayerEntity player) {
 
@@ -443,7 +433,7 @@ public class BloodharvesterItem extends SwordItem {
 
                 NEXT_BLOOD_DECAY.put(
                         id,
-                        player.age + 50L
+                        player.age + 60L
                 );
             }
         }

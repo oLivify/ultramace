@@ -18,6 +18,7 @@ public class ItemAttributeManager {
 
     private static final Set<UUID> BLOODHARVESTER_PLAYERS = new HashSet<>();
     private static final Set<UUID> VOIDPIERCER_PLAYERS = new HashSet<>();
+    private static final Set<UUID> STORM_PLAYERS = new HashSet<>();
 
 
     private static final Identifier BLOOD_SPEED =
@@ -35,12 +36,17 @@ public class ItemAttributeManager {
     private static final Identifier ULTIMATE_HEALTH =
             Identifier.of("ultimate_health");
 
+    private static final Identifier STORM_REACH =
+            Identifier.of("storm_reach");
+
 
     public static void tick(ServerPlayerEntity player) {
 
         handleBloodharvester(player);
 
         handleVoidpiercer(player);
+
+        handleStormcleaver(player);
 
     }
 
@@ -79,7 +85,32 @@ public class ItemAttributeManager {
         }
     }
 
+    private static void handleStormcleaver(ServerPlayerEntity player) {
 
+        if (isHolding(player, ModItems.STORMCLEAVER)) {
+
+            applyStormEffects(player);
+
+            STORM_PLAYERS.add(player.getUuid());
+
+        }
+        else if (STORM_PLAYERS.contains(player.getUuid())) {
+
+            removeStormEffects(player);
+
+            STORM_PLAYERS.remove(player.getUuid());
+        }
+    }
+
+
+    private static boolean isHolding(PlayerEntity player, Item item) {
+
+        if(player.getMainHandStack().isOf(item)) {
+            return true;
+        }
+
+        return false;
+    }
 
     private static boolean hasItemInInventory(PlayerEntity player, Item item) {
 
@@ -250,5 +281,37 @@ public class ItemAttributeManager {
         }
 
     }
+
+
+    private static void applyStormEffects(PlayerEntity player) {
+        var attribute = player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE);
+
+        if(attribute != null) {
+
+            attribute.removeModifier(STORM_REACH);
+
+            attribute.addTemporaryModifier(
+                    new EntityAttributeModifier(
+                            STORM_REACH,
+                            3,
+                            EntityAttributeModifier.Operation.ADD_VALUE
+                    )
+            );
+
+        }
+
+    }
+
+    public static void removeStormEffects(PlayerEntity player) {
+
+        var attribute = player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE);
+
+
+        if (attribute != null) {
+            attribute.removeModifier(STORM_REACH);
+        }
+
+    }
+
 
 }

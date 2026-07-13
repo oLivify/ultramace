@@ -34,6 +34,7 @@ import net.oliviy.ultramace.item.custom.dawnrender.DawnrenderItem;
 import net.oliviy.ultramace.item.custom.dawnrender.FreezeManager;
 import net.oliviy.ultramace.item.custom.starfall.StarfallItem;
 import net.oliviy.ultramace.item.custom.stormcleaver.StormcleaverItem;
+import net.oliviy.ultramace.item.custom.voidpiercer.CataclysmManager;
 import net.oliviy.ultramace.network.ModNetworking;
 import net.oliviy.ultramace.particles.ModParticles;
 import org.slf4j.Logger;
@@ -56,6 +57,7 @@ public class Ultramace implements ModInitializer {
 		ParalysisEvents.register();
 		AttackEvents.register();
 		UseItemEvents.register();
+		CataclysmManager.register();
 		register();
 		checkTotem();
 		clientEvents();
@@ -93,7 +95,7 @@ public class Ultramace implements ModInitializer {
 			return true;
 		});
 
-		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> { // adds two blood stacks when the player kills a entity
+		ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> { // adds two blood stacks when the player kills an entity
 
 			if (!(damageSource.getAttacker() instanceof PlayerEntity player))
 				return;
@@ -185,28 +187,6 @@ public class Ultramace implements ModInitializer {
 			}
 
 		});
-
-		AttackBlockCallback.EVENT.register(
-				(player, world, hand, pos, direction) -> {
-
-					if(FreezeManager.isFrozen(player)) {
-						return ActionResult.FAIL;
-					}
-
-					return ActionResult.PASS;
-				}
-		);
-
-		AttackEntityCallback.EVENT.register(
-				(player, world, hand, entity, hitResult) -> {
-
-					if(FreezeManager.isFrozen(player)) {
-						return ActionResult.FAIL;
-					}
-
-					return ActionResult.PASS;
-				}
-		);
 
 
 	}

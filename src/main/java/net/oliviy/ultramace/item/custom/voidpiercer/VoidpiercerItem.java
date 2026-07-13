@@ -1,5 +1,6 @@
 package net.oliviy.ultramace.item.custom.voidpiercer;
 
+import net.minecraft.datafixer.fix.ItemSpawnEggFix;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -8,11 +9,13 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.SwordItem;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
@@ -24,10 +27,7 @@ import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class VoidpiercerItem extends SwordItem {
 
@@ -38,8 +38,13 @@ public class VoidpiercerItem extends SwordItem {
     public static final int RIFT_COOLDOWN = 200;
     private static final String RIFT_COOLDOWN_ID = "voidpiercer_rift";
 
+    public static final int CATACLYSM_COOLDOWN = 2400;
+    private static final String CATACLYSM_COOLDOWN_ID = "voidpiercer_cataclysm";
 
     private final Map<UUID, Long> lastHit = new HashMap<>();
+
+    private static final Set<UUID> SWORD_IN_OFFHAND = new HashSet<>();
+
 
 
     public VoidpiercerItem(Settings settings) {
@@ -51,7 +56,6 @@ public class VoidpiercerItem extends SwordItem {
         super.onCraftByPlayer(stack, world, player);
 
         if (!world.isClient) {
-            //ModItems.addEnchantment(world, stack, Enchantments.SHARPNESS, 10);
             ModItems.giveDragonEgg(player);
             ModItems.playCraftedSound(world, player);
         }
@@ -63,6 +67,18 @@ public class VoidpiercerItem extends SwordItem {
 
         if (world.isClient()) return;
         if (!(entity instanceof PlayerEntity player)) return;
+
+        if (player.getOffHandStack().isOf(ModItems.VOIDPIERCER)) {
+            if (SWORD_IN_OFFHAND.add(player.getUuid())) {
+                if(world instanceof ServerWorld serverWorld) {
+                    cataclysm(player, serverWorld);
+                }
+
+            }
+        } else {
+            SWORD_IN_OFFHAND.remove(player.getUuid());
+        }
+
 
         if (selected) {
             if (player.isSneaking()) {
@@ -85,23 +101,34 @@ public class VoidpiercerItem extends SwordItem {
 
         // Passive tracking for Distance Collapse
         UUID id = target.getUuid();
-        long now = System.currentTimeMillis();
+        long currentTick = world.getTime();
 
-        if (lastHit.containsKey(id)) {
-            long diff = now - lastHit.get(id);
+        Long lastHitTick = lastHit.get(id);
 
-            if (diff <= 2000) {
-                target.damage(attacker.getDamageSources().generic(), 6.0f); // bonus true-ish damage
+        if (lastHitTick != null) {
+
+            long elapsed = currentTick - lastHitTick;
+
+            // 40 ticks = 2 seconds
+            if (elapsed <= 40) {
+
+                target.damage(attacker.getDamageSources().magic(), 6.0f);
+
                 target.addStatusEffect(new StatusEffectInstance(
-                        StatusEffects.SLOWNESS, 200, 1
+                        StatusEffects.SLOWNESS,
+                        200,
+                        1
                 ));
+
                 target.addStatusEffect(new StatusEffectInstance(
-                        StatusEffects.WEAKNESS, 200, 1
+                        StatusEffects.WEAKNESS,
+                        200,
+                        1
                 ));
             }
         }
 
-        lastHit.put(id, now);
+        lastHit.put(id, currentTick);
 
 
         if (attacker.isSneaking()) {
@@ -117,6 +144,14 @@ public class VoidpiercerItem extends SwordItem {
 
 
             riftSlash(attacker, stack, target, world);
+
+        }
+
+
+        Random random = new Random();
+
+        if (random.nextInt(20) == 0) {
+            itemLockTarget(target);
 
         }
 
@@ -204,9 +239,8 @@ public class VoidpiercerItem extends SwordItem {
             double distance = Math.max(0.1, direction.length());
 
             Vec3d pull = direction.normalize().multiply(0.2);
-            // strength of pull
 
-            // scale stronger when farther away (feels like vacuum)
+
             pull = pull.multiply(Math.min(1.0, distance / radius));
 
             target.addVelocity(pull.x, pull.y * 0.1, pull.z);
@@ -232,7 +266,51 @@ public class VoidpiercerItem extends SwordItem {
     }
 
 
+    private void itemLockTarget(LivingEntity entity) {
+        if(entity instanceof PlayerEntity target) {
+            Item mainHand = target.getMainHandStack().getItem();
 
+            target.getItemCooldownManager().set(mainHand, 80);
+
+            World world = target.getWorld();
+
+            world.playSound(
+                    null,
+                    target.getX(),
+                    target.getY(),
+                    target.getZ(),
+                    SoundEvents.BLOCK_ANVIL_PLACE,
+                    target.getSoundCategory(),
+                    1.0F,
+                    1.0F
+            );
+        }
+    }
+
+
+    private void cataclysm(PlayerEntity player, ServerWorld serverWorld){
+
+        if(player instanceof PlayerEntity user) {
+            if (CooldownManager.isOnCooldown(user, CATACLYSM_COOLDOWN_ID, CATACLYSM_COOLDOWN)) {
+                return;
+            }
+
+            CooldownManager.startCooldown(user, CATACLYSM_COOLDOWN_ID, CATACLYSM_COOLDOWN);
+        }
+
+
+        Vec3d look = player.getRotationVec(1.0F);
+
+        Vec3d center = player.getPos().add(
+                look.multiply(3)
+        );
+
+        CataclysmManager.spawn(
+                serverWorld,
+                player,
+                center
+        );
+    }
 
 }
 

@@ -297,7 +297,7 @@ public class DawnrenderItem extends SwordItem {
         for(LivingEntity target : targets) {
 
 
-            int duration = 20 * 8;
+            int duration = 20 * 3;
 
             target.addStatusEffect(
                     new StatusEffectInstance(

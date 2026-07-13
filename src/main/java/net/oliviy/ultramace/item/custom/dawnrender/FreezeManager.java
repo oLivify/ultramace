@@ -38,10 +38,4 @@ public class FreezeManager {
         return true;
     }
 
-
-    public static void unfreeze(Entity entity) {
-
-        FROZEN_PLAYERS.remove(entity.getUuid());
-
-    }
 }
