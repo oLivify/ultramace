@@ -93,11 +93,8 @@ public class DawnrenderItem extends SwordItem {
 
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-
         if (!(entity instanceof PlayerEntity player)) return;
-
         if (!world.isClient()) {
-
             if (player.getOffHandStack().isOf(ModItems.DAWNRNDER)) {
                 if (SWORD_IN_OFFHAND.add(player.getUuid())) {
                     activateCelestialBinding(player);
@@ -105,8 +102,6 @@ public class DawnrenderItem extends SwordItem {
             } else {
                 SWORD_IN_OFFHAND.remove(player.getUuid());
             }
-
-
             if(selected) {
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 40, 0, true, false));
                 player.addStatusEffect(new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 40, 0, true, false));
