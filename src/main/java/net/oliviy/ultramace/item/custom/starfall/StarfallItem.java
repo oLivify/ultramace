@@ -11,6 +11,8 @@ import net.minecraft.entity.projectile.DragonFireballEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.math.BlockPos;
@@ -387,6 +389,17 @@ public class StarfallItem extends SwordItem {
             ItemAttributeManager.removeUltimateEffects(player);
 
     });
+
+        world.playSound(
+                null,
+                player.getX(),
+                player.getY(),
+                player.getZ(),
+                SoundEvents.BLOCK_BEACON_POWER_SELECT,
+                SoundCategory.PLAYERS,
+                2.0f,
+                1.0f
+        );
 
     }
 

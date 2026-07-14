@@ -31,4 +31,10 @@ public class ClientCooldownManager {
     public static boolean isOnCooldown(String abilityId) {
         return getRemainingTicks(abilityId) > 0;
     }
+
+    public static void removeCooldown(String abilityId) {
+
+        COOLDOWNS.remove(abilityId);
+
+    }
 }

@@ -4,11 +4,13 @@ import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -16,12 +18,16 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Identifier;
 
 import net.minecraft.util.TypedActionResult;
+import net.oliviy.ultramace.commands.ModCommands;
+import net.oliviy.ultramace.cooldown.CooldownState;
+import net.oliviy.ultramace.cooldown.ModCooldowns;
 import net.oliviy.ultramace.effects.ModEffects;
 import net.oliviy.ultramace.event.AttackEvents;
 import net.oliviy.ultramace.event.ParalysisEvents;
@@ -81,7 +87,11 @@ public class Ultramace implements ModInitializer {
 			return true;
 		});
 
-
+		CommandRegistrationCallback.EVENT.register(
+				(dispatcher, registryAccess, environment) -> {
+					ModCommands.register(dispatcher);
+				}
+		);
 
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
 
@@ -112,6 +122,12 @@ public class Ultramace implements ModInitializer {
 			for(ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
 
 				ItemAttributeManager.tick(player);
+
+				if (server.getTicks() % 6000 == 0) {
+					for (ServerWorld world : server.getWorlds()) {
+						ModCooldowns.get(world).cleanup(world.getTime());
+					}
+				}
 
 			}
 
@@ -150,6 +166,21 @@ public class Ultramace implements ModInitializer {
 					);
 				}
 		);
+
+		ServerPlayConnectionEvents.JOIN.register(
+				(handler, sender, server) -> {
+					System.out.println("PLAYER JOINED - SYNCING COOLDOWNS");
+					ServerPlayerEntity player = handler.player;
+
+					CooldownState state =
+							ModCooldowns.get(player.getServerWorld());
+
+					state.syncPlayer(player);
+				}
+		);
+
+
+
 	}
 
 

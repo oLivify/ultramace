@@ -167,7 +167,7 @@ public class CataclysmInstance {
                     knock.z
             );
 
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 150, 4, false, false, false));
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.LEVITATION, 240, 4, false, false, false));
             lockInventory(entity);
         }
     }
@@ -176,7 +176,7 @@ public class CataclysmInstance {
         if(entity instanceof PlayerEntity player) {
             // Main inventory + hotbar
             for (ItemStack stack : player.getInventory().main) {
-                player.getItemCooldownManager().set(stack.getItem(), 150);
+                player.getItemCooldownManager().set(stack.getItem(), 240);
             }
         }
     }

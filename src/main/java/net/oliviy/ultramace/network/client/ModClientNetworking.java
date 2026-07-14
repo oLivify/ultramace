@@ -14,11 +14,19 @@ public class ModClientNetworking {
                 CooldownPayload.ID,
                 (payload, context) -> {
 
-                    ClientCooldownManager.setCooldown(
-                            payload.abilityId(),
-                            payload.endTick()
-                    );
+                    if (payload.endTick() <= 0) {
 
+                        ClientCooldownManager.removeCooldown(
+                                payload.abilityId()
+                        );
+
+                    } else {
+
+                        ClientCooldownManager.setCooldown(
+                                payload.abilityId(),
+                                payload.endTick()
+                        );
+                    }
                 }
         );
 

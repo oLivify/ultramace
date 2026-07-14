@@ -3,31 +3,25 @@ package net.oliviy.ultramace.cooldown;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.oliviy.ultramace.network.ModNetworking;
 import net.oliviy.ultramace.network.payload.CooldownPayload;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class CooldownManager {
 
-    // Player UUID -> (Ability ID -> Last Use Tick)
-    private static final Map<UUID, Map<String, Long>> COOLDOWNS = new HashMap<>();
-
-    /**
-     * Starts a cooldown for an ability.
-     *
-     * @param player The player.
-     * @param abilityId A unique ID, e.g. "dawnrender_judgment".
-     */
     public static void startCooldown(PlayerEntity player, String abilityId, long cooldownTicks) {
+        if (!(player.getWorld() instanceof ServerWorld serverWorld)) {
+            return;
+        }
 
-        long startTick = player.getWorld().getTime();
-        long endTick = startTick + cooldownTicks;
+        CooldownState state = ModCooldowns.get(serverWorld);
 
-        COOLDOWNS
-                .computeIfAbsent(player.getUuid(), uuid -> new HashMap<>())
-                .put(abilityId, player.getWorld().getTime());
+        state.setCooldown(
+                player.getUuid(),
+                abilityId,
+                serverWorld.getTime() + cooldownTicks
+        );
 
         if (player instanceof ServerPlayerEntity serverPlayer) {
 
@@ -35,100 +29,43 @@ public class CooldownManager {
                     serverPlayer,
                     new CooldownPayload(
                             abilityId,
-                            endTick
+                            serverWorld.getTime() + cooldownTicks
                     )
             );
-
         }
+
+
     }
 
-    /**
-     * Returns true if the ability is currently on cooldown.
-     */
+
     public static boolean isOnCooldown(PlayerEntity player, String abilityId, long cooldownTicks) {
 
-        Map<String, Long> playerCooldowns = COOLDOWNS.get(player.getUuid());
-
-        if (playerCooldowns == null) {
+        if (!(player.getWorld() instanceof ServerWorld serverWorld)) {
             return false;
         }
 
-        Long lastUse = playerCooldowns.get(abilityId);
+        CooldownState state = ModCooldowns.get(serverWorld);
 
-        if (lastUse == null) {
-            return false;
-        }
-
-        long currentTick = player.getWorld().getTime();
-
-        return currentTick - lastUse < cooldownTicks;
+        return state.isOnCooldown(
+                player.getUuid(),
+                abilityId,
+                serverWorld.getTime()
+        );
     }
 
-    /**
-     * Returns remaining cooldown in ticks.
-     */
-    public static long getRemainingTicks(PlayerEntity player, String abilityId, long cooldownTicks) {
 
-        Map<String, Long> playerCooldowns = COOLDOWNS.get(player.getUuid());
+    public static long getRemainingCooldown(PlayerEntity player, String abilityId) {
 
-        if (playerCooldowns == null) {
+        if (!(player.getWorld() instanceof ServerWorld serverWorld)) {
             return 0;
         }
 
-        Long lastUse = playerCooldowns.get(abilityId);
+        CooldownState state = ModCooldowns.get(serverWorld);
 
-        if (lastUse == null) {
-            return 0;
-        }
-
-        long elapsed = player.getWorld().getTime() - lastUse;
-
-        return Math.max(0, cooldownTicks - elapsed);
-    }
-
-    /**
-     * Removes a cooldown.
-     */
-    public static void clearCooldown(PlayerEntity player, String abilityId) {
-
-        Map<String, Long> playerCooldowns = COOLDOWNS.get(player.getUuid());
-
-        if (playerCooldowns != null) {
-            playerCooldowns.remove(abilityId);
-
-            if (playerCooldowns.isEmpty()) {
-                COOLDOWNS.remove(player.getUuid());
-            }
-        }
-    }
-
-    /**
-     * Returns true if the ability is ready to use.
-     */
-    public static boolean isReady(PlayerEntity player, String abilityId, long cooldownTicks) {
-        return !isOnCooldown(player, abilityId, cooldownTicks);
-    }
-
-
-    public static String getFormattedTime(PlayerEntity player,
-                                          String abilityId,
-                                          long cooldownTicks) {
-
-        long remaining = getRemainingTicks(player, abilityId, cooldownTicks);
-
-        if (remaining <= 0) {
-            return "Ready";
-        }
-
-        long seconds = (remaining + 19) / 20;
-
-        long minutes = seconds / 60;
-        seconds %= 60;
-
-        if (minutes > 0) {
-            return minutes + ":" + String.format("%02d", seconds);
-        }
-
-        return seconds + "s";
+        return state.getRemaining(
+                player.getUuid(),
+                abilityId,
+                serverWorld.getTime()
+        );
     }
 }
