@@ -47,7 +47,5 @@ public class CataclysmManager {
                         center
                 )
         );
-
-        caster.sendMessage(Text.of("spawned an enders cataclysm"));
     }
 }

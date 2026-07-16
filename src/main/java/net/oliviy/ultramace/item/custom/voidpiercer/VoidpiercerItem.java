@@ -26,6 +26,7 @@ import net.minecraft.world.World;
 import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.ModToolMaterials;
+import net.oliviy.ultramace.util.ModTags;
 
 import java.util.*;
 
@@ -45,6 +46,8 @@ public class VoidpiercerItem extends SwordItem {
 
     private static final Set<UUID> SWORD_IN_OFFHAND = new HashSet<>();
 
+
+    private static final Map<UUID, UUID> LOCKED_PLAYERS = new HashMap<>();
 
 
     public VoidpiercerItem(Settings settings) {
@@ -70,7 +73,7 @@ public class VoidpiercerItem extends SwordItem {
 
         if (player.getOffHandStack().isOf(ModItems.VOIDPIERCER)) {
             if (SWORD_IN_OFFHAND.add(player.getUuid())) {
-                if(world instanceof ServerWorld serverWorld) {
+                if (world instanceof ServerWorld serverWorld) {
                     cataclysm(player, serverWorld);
                 }
 
@@ -82,7 +85,22 @@ public class VoidpiercerItem extends SwordItem {
 
         if (selected) {
             if (player.isSneaking()) {
-                blackHole(world, player);
+                blackHole(world, player, player);
+            }
+
+            if (!player.isSneaking()) {
+                for (Map.Entry<UUID, UUID> entry : LOCKED_PLAYERS.entrySet()) {
+
+                    if (entry.getValue().equals(player.getUuid())) {
+
+                        PlayerEntity target =
+                                world.getPlayerByUuid(entry.getKey());
+
+                        if (target != null) {
+                            enableItems(target, player);
+                        }
+                    }
+                }
             }
 
         }
@@ -133,14 +151,13 @@ public class VoidpiercerItem extends SwordItem {
 
         if (attacker.isSneaking()) {
 
-            if(attacker instanceof PlayerEntity user) {
+            if (attacker instanceof PlayerEntity user) {
                 if (CooldownManager.isOnCooldown(user, RIFT_COOLDOWN_ID, RIFT_COOLDOWN)) {
                     return super.postHit(stack, target, attacker);
                 }
 
                 CooldownManager.startCooldown(user, RIFT_COOLDOWN_ID, RIFT_COOLDOWN);
             }
-
 
 
             riftSlash(attacker, stack, target, world);
@@ -206,7 +223,7 @@ public class VoidpiercerItem extends SwordItem {
             double projection = toEntity.dotProduct(forward);
 
             if (projection < 0 || projection > 8) continue;
-            if(attacker instanceof PlayerEntity player) {
+            if (attacker instanceof PlayerEntity player) {
                 e.damage(attacker.getDamageSources().playerAttack(player), 10.0f);
             }
 
@@ -218,12 +235,12 @@ public class VoidpiercerItem extends SwordItem {
     }
 
 
-
-    private void blackHole(World world, Entity entity) {
+    private void blackHole(World world, Entity entity, PlayerEntity caster) {
 
         if (!(entity instanceof PlayerEntity player)) return;
 
         if (!player.getMainHandStack().isOf(ModItems.VOIDPIERCER)) return;
+
 
         double radius = 12;
 
@@ -234,6 +251,8 @@ public class VoidpiercerItem extends SwordItem {
         );
 
         for (LivingEntity target : targets) {
+
+            checkForMobilityItems(target, caster);
 
             Vec3d direction = player.getPos().subtract(target.getPos());
             double distance = Math.max(0.1, direction.length());
@@ -267,7 +286,7 @@ public class VoidpiercerItem extends SwordItem {
 
 
     private void itemLockTarget(LivingEntity entity) {
-        if(entity instanceof PlayerEntity target) {
+        if (entity instanceof PlayerEntity target) {
             Item mainHand = target.getMainHandStack().getItem();
 
             target.getItemCooldownManager().set(mainHand, 80);
@@ -288,9 +307,9 @@ public class VoidpiercerItem extends SwordItem {
     }
 
 
-    private void cataclysm(PlayerEntity player, ServerWorld serverWorld){
+    private void cataclysm(PlayerEntity player, ServerWorld serverWorld) {
 
-        if(player instanceof PlayerEntity user) {
+        if (player instanceof PlayerEntity user) {
             if (CooldownManager.isOnCooldown(user, CATACLYSM_COOLDOWN_ID, CATACLYSM_COOLDOWN)) {
                 return;
             }
@@ -312,7 +331,50 @@ public class VoidpiercerItem extends SwordItem {
         );
     }
 
+    private void checkForMobilityItems(LivingEntity entity, PlayerEntity caster) {
+        if(entity instanceof PlayerEntity player) {
+            // Main inventory
+            for (ItemStack stack : player.getInventory().main) {
+                if (stack.isOf(Items.ENDER_PEARL) || stack.isOf(Items.CHORUS_FRUIT)) {
+                    player.getItemCooldownManager().set(stack.getItem(), 1000);
+                    LOCKED_PLAYERS.put(player.getUuid(), caster.getUuid());
+                }
+            }
+
+            // Hotbar is included in main, but this covers offhand
+            if (player.getOffHandStack().isOf(Items.ENDER_PEARL) || player.getOffHandStack().isOf(Items.CHORUS_FRUIT)) {
+                player.getItemCooldownManager().set(player.getOffHandStack().getItem(), 1000);
+                LOCKED_PLAYERS.put(player.getUuid(), caster.getUuid());
+            }
+
+        }
+    }
+
+    private void searchInventory(PlayerEntity player, PlayerEntity caster) {
+        for (ItemStack stack : player.getInventory().main) {
+            if (stack.isOf(Items.ENDER_PEARL) || stack.isOf(Items.CHORUS_FRUIT) && player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
+                player.getItemCooldownManager().remove(stack.getItem());
+                LOCKED_PLAYERS.remove(player.getUuid(), caster.getUuid());
+            }
+
+            if (player.getOffHandStack().isOf(Items.ENDER_PEARL) || player.getOffHandStack().isOf(Items.CHORUS_FRUIT) && player.getItemCooldownManager().isCoolingDown(stack.getItem())) {
+                player.getItemCooldownManager().remove(player.getOffHandStack().getItem());
+                LOCKED_PLAYERS.remove(player.getUuid(), caster.getUuid());
+            }
+
+        }
+    }
+
+    private void enableItems(PlayerEntity target, PlayerEntity caster) {
+        if(LOCKED_PLAYERS.containsKey(target.getUuid())) {
+            searchInventory(target, caster);
+        }
+    }
+
+
+
 }
+
 
 
 

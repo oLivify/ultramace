@@ -6,7 +6,9 @@
   "item.ultramace.voidpiercer": "Voidpiercer",
   "item.ultramace.starfall": "Starfall",
   "item.ultramace.bloodharvester": "Bloodharvester",
+  "item.ultramace.spectre_staff": "Sculk Staff",
 
   "effect.ultramace.bleeding": "Bleeding",
-  "effect.ultramace.paralysis": "Paralysis"
+  "effect.ultramace.paralysis": "Paralysis",
+  "effect.ultramace.soul_sickness": "Soul Sickness"
 }

@@ -3,7 +3,9 @@
 	"package": "net.oliviy.ultramace.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
+		"ExampleMixin",
+		"InGameHudMixin",
+		"HungerManagerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

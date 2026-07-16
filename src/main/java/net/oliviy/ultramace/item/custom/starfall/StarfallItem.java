@@ -58,9 +58,9 @@ public class StarfallItem extends SwordItem {
     // SIMPLE SCHEDULER (FIX)
     // =========================
 
-    private static final List<ScheduledTask> TASKS = new ArrayList<>();
+    public static final List<ScheduledTask> TASKS = new ArrayList<>();
 
-    private static class ScheduledTask {
+    public static class ScheduledTask {
         int ticks;
         Runnable action;
 
@@ -86,7 +86,7 @@ public class StarfallItem extends SwordItem {
         });
     }
 
-    private static void schedule(int delayTicks, Runnable action) {
+    public static void schedule(int delayTicks, Runnable action) {
         TASKS.add(new ScheduledTask(delayTicks, action));
     }
 

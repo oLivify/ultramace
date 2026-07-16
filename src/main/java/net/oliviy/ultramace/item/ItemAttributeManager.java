@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.oliviy.ultramace.item.custom.bloodharvester.BloodharvesterItem;
+import net.oliviy.ultramace.item.custom.spectre_staff.SpectreStaffItem;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,6 +41,8 @@ public class ItemAttributeManager {
             Identifier.of("storm_reach");
 
 
+
+
     public static void tick(ServerPlayerEntity player) {
 
         handleBloodharvester(player);
@@ -49,6 +52,35 @@ public class ItemAttributeManager {
         handleStormcleaver(player);
 
     }
+
+
+    private static boolean isHolding(PlayerEntity player, Item item) {
+
+        if(player.getMainHandStack().isOf(item)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean hasItemInInventory(PlayerEntity player, Item item) {
+
+        // Main inventory
+        for (ItemStack stack : player.getInventory().main) {
+            if (stack.isOf(item)) {
+                return true;
+            }
+        }
+
+        // Hotbar is included in main, but this covers offhand
+        if (player.getOffHandStack().isOf(item)) {
+            return true;
+        }
+
+        return false;
+    }
+
+
 
 
     private static void handleBloodharvester(ServerPlayerEntity player) {
@@ -103,31 +135,6 @@ public class ItemAttributeManager {
     }
 
 
-    private static boolean isHolding(PlayerEntity player, Item item) {
-
-        if(player.getMainHandStack().isOf(item)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private static boolean hasItemInInventory(PlayerEntity player, Item item) {
-
-        // Main inventory
-        for (ItemStack stack : player.getInventory().main) {
-            if (stack.isOf(item)) {
-                return true;
-            }
-        }
-
-        // Hotbar is included in main, but this covers offhand
-        if (player.getOffHandStack().isOf(item)) {
-            return true;
-        }
-
-        return false;
-    }
 
     private static void applyBloodEffects(PlayerEntity player) {
 
@@ -250,6 +257,7 @@ public class ItemAttributeManager {
     }
 
 
+
     public static void applyUltimateEffects(PlayerEntity player) {
         var health = player.getAttributeInstance(
                 EntityAttributes.GENERIC_MAX_HEALTH
@@ -283,6 +291,7 @@ public class ItemAttributeManager {
     }
 
 
+
     private static void applyStormEffects(PlayerEntity player) {
         var attribute = player.getAttributeInstance(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE);
 
@@ -312,6 +321,8 @@ public class ItemAttributeManager {
         }
 
     }
+
+
 
 
 }

@@ -17,6 +17,9 @@ public class ModEffects {
     public static final RegistryEntry<StatusEffect> PARALYSIS = registerStatusEffect("paralysis",
             new ParalysisEffect(StatusEffectCategory.HARMFUL, 0x7FDBFF));
 
+    public static final RegistryEntry<StatusEffect> SOUL_SICKNESS = registerStatusEffect("soul_sickness",
+            new SoulSicknessEffect(StatusEffectCategory.HARMFUL, 0x89A203));
+
 
 
 

@@ -113,9 +113,6 @@ public class BloodharvesterItem extends SwordItem {
                 crimsonFeast(world,player);
             }
 
-
-
-
         }
 
 
@@ -335,7 +332,7 @@ public class BloodharvesterItem extends SwordItem {
         // bonus reward if good hit
         if (hitCount >= 3) {
             player.heal(6.0f);
-            addBloodStacks(player, 2);
+            addBloodStacks(player, hitCount);
         }
 
         // explosion visuals

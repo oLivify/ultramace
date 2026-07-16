@@ -11,6 +11,7 @@ import net.oliviy.ultramace.cooldown.CooldownManager;
 import net.oliviy.ultramace.data.AbilityHudData;
 import net.oliviy.ultramace.item.custom.bloodharvester.BloodharvesterItem;
 import net.oliviy.ultramace.item.custom.dawnrender.DawnrenderItem;
+import net.oliviy.ultramace.item.custom.spectre_staff.SpectreStaffItem;
 import net.oliviy.ultramace.item.custom.starfall.StarfallItem;
 import net.oliviy.ultramace.item.custom.stormcleaver.StormcleaverItem;
 import net.oliviy.ultramace.item.custom.voidpiercer.VoidpiercerItem;
@@ -115,6 +116,29 @@ public class ModHud implements HudRenderCallback {
             )
     );
 
+
+
+    private static final List<AbilityHudData> SPECTRE_ABILITIES = List.of(
+            new AbilityHudData(
+                    "Sonic Boom",
+                    0xc5cdb5,
+                    "spectre_sonic_boom",
+                    SpectreStaffItem.SONIC_COOLDOWN
+            ),
+            new AbilityHudData(
+                    "Summon Sculk",
+                    0x61c3cb,
+                    "spectre_summon",
+                    SpectreStaffItem.SUMMON_COOLDOWN
+            ),
+            new AbilityHudData(
+                    "Sculk Spread",
+                    0x819987,
+                    "spectre_spread",
+                    SpectreStaffItem.SPREAD_COOLDOWN
+            )
+    );
+
     @Override
     public void onHudRender(DrawContext context, RenderTickCounter tickCounter) {
 
@@ -139,6 +163,8 @@ public class ModHud implements HudRenderCallback {
             abilities = STARFALL_ABILITIES;
         } else if (item instanceof BloodharvesterItem) {
             abilities = BLOODHARVESTER_ABILITIES;
+        } else if (item instanceof SpectreStaffItem) {
+            abilities = SPECTRE_ABILITIES;
         }
 
 

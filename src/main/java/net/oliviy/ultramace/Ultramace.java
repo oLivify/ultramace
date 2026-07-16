@@ -12,6 +12,7 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.EntityStatuses;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
@@ -29,6 +30,7 @@ import net.oliviy.ultramace.commands.ModCommands;
 import net.oliviy.ultramace.cooldown.CooldownState;
 import net.oliviy.ultramace.cooldown.ModCooldowns;
 import net.oliviy.ultramace.effects.ModEffects;
+import net.oliviy.ultramace.entity.ModEntities;
 import net.oliviy.ultramace.event.AttackEvents;
 import net.oliviy.ultramace.event.ParalysisEvents;
 import net.oliviy.ultramace.event.UseItemEvents;
@@ -38,6 +40,7 @@ import net.oliviy.ultramace.item.ModItems;
 import net.oliviy.ultramace.item.custom.bloodharvester.BloodharvesterItem;
 import net.oliviy.ultramace.item.custom.dawnrender.DawnrenderItem;
 import net.oliviy.ultramace.item.custom.dawnrender.FreezeManager;
+import net.oliviy.ultramace.item.custom.spectre_staff.SpectreStaffItem;
 import net.oliviy.ultramace.item.custom.starfall.StarfallItem;
 import net.oliviy.ultramace.item.custom.stormcleaver.StormcleaverItem;
 import net.oliviy.ultramace.item.custom.voidpiercer.CataclysmManager;
@@ -64,6 +67,7 @@ public class Ultramace implements ModInitializer {
 		AttackEvents.register();
 		UseItemEvents.register();
 		CataclysmManager.register();
+		ModEntities.registerModEntities();
 		register();
 		checkTotem();
 		clientEvents();
@@ -73,6 +77,25 @@ public class Ultramace implements ModInitializer {
 	}
 
 	public static void register() {
+
+		AttackEntityCallback.EVENT.register(
+				(player, world, hand, entity, hitResult) -> {
+
+					if (!world.isClient()
+							&& player.getStackInHand(hand).getItem() instanceof SpectreStaffItem
+							&& entity instanceof LivingEntity target) {
+
+
+						System.out.println("COMMANDING MINIONS");
+
+
+						SpectreStaffItem.commandMinions(player, target);
+					}
+
+
+					return ActionResult.PASS;
+				}
+		);
 
 
 		ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
@@ -169,7 +192,6 @@ public class Ultramace implements ModInitializer {
 
 		ServerPlayConnectionEvents.JOIN.register(
 				(handler, sender, server) -> {
-					System.out.println("PLAYER JOINED - SYNCING COOLDOWNS");
 					ServerPlayerEntity player = handler.player;
 
 					CooldownState state =

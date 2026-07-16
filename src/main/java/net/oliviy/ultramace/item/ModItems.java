@@ -20,6 +20,7 @@ import net.oliviy.ultramace.Ultramace;
 import net.oliviy.ultramace.item.custom.FireMace;
 import net.oliviy.ultramace.item.custom.bloodharvester.BloodharvesterItem;
 import net.oliviy.ultramace.item.custom.dawnrender.DawnrenderItem;
+import net.oliviy.ultramace.item.custom.spectre_staff.SpectreStaffItem;
 import net.oliviy.ultramace.item.custom.starfall.StarfallItem;
 import net.oliviy.ultramace.item.custom.stormcleaver.StormcleaverItem;
 import net.oliviy.ultramace.item.custom.voidpiercer.VoidpiercerItem;
@@ -91,6 +92,19 @@ public class ModItems {
     );
 
 
+    public static final Item SPECTRE_STAFF = Registry.register(
+            Registries.ITEM,
+            Identifier.of(Ultramace.MOD_ID, "spectre_staff"),
+            new SpectreStaffItem(new Item.Settings()
+                    .maxCount(1)
+                    .rarity(Rarity.EPIC)
+                    .fireproof()
+
+
+    ));
+
+
+
 
 
 
@@ -114,6 +128,7 @@ public class ModItems {
             entries.add(VOIDPIERCER);
             entries.add(STARFALL);
             entries.add(BLOODHARVESTER);
+            entries.add(SPECTRE_STAFF);
         });
     }
 
